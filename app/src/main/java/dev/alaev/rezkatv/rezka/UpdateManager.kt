@@ -13,7 +13,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.widget.Toast
-import androidx.core.content.ContextCompat
 import dev.alaev.rezkatv.BuildConfig
 import dev.alaev.rezkatv.R
 import org.json.JSONObject
@@ -145,12 +144,16 @@ object UpdateManager {
                 }
             }
         }
-        ContextCompat.registerReceiver(
-            activity,
-            receiver,
-            IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
-            ContextCompat.RECEIVER_EXPORTED,
-        )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            activity.registerReceiver(
+                receiver,
+                IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
+                Context.RECEIVER_EXPORTED,
+            )
+        } else {
+            @Suppress("DEPRECATION", "UnspecifiedRegisterReceiverFlag")
+            activity.registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+        }
     }
 
     internal fun isNewer(candidate: String, current: String): Boolean {

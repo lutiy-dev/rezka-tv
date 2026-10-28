@@ -106,6 +106,8 @@
     <string name="pref_clear_cache">Очистить кэш</string>
     <string name="pref_clear_cache_summary">Сохранённые страницы и картинки</string>
     <string name="cache_cleared">Кэш очищен</string>
+    <string name="pref_check_updates">Проверить обновления</string>
+    <string name="pref_check_updates_summary">Проверить новую версию Rezka TV на GitHub</string>
     <string name="pref_version">Версия</string>
 
     <string name="login_title">Вход в rezka</string>

@@ -10,4 +10,12 @@ class UpdateManagerTest {
         val expected = true
         assertThat("newer semantic version is detected", actual, `is`(expected))
     }
+
+    @Test
+    fun ignoresOlderVersion() {
+        val versions = "1.0.9" to "1.1.0"
+        val actual = UpdateManager.isNewer(versions.first, versions.second)
+        val expected = false
+        assertThat("older version is ignored", actual, `is`(expected))
+    }
 }

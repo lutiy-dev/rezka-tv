@@ -92,7 +92,9 @@ jobs:
           TAG="v${REZKA_VERSION_NAME}"
           ASSET="Rezka-TV-${REZKA_VERSION_NAME}.apk"
           cp app/build/outputs/apk/release/app-release.apk "$ASSET"
-          gh release create "$TAG" "$ASSET" \
+          printf '{"version":"%s","apkUrl":"https://github.com/lutiy-dev/rezka-tv/releases/download/%s/%s"}\n' \
+            "$REZKA_VERSION_NAME" "$TAG" "$ASSET" > update.json
+          gh release create "$TAG" "$ASSET" update.json \
             --target "$GITHUB_SHA" \
             --title "Rezka TV ${REZKA_VERSION_NAME}" \
             --notes "Signed Android TV release with mobile responsive UI and portrait QR scaling."

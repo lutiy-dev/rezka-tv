@@ -40,12 +40,6 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.ui.CaptionStyleCompat
 import androidx.media3.ui.SubtitleView
 import androidx.media3.ui.leanback.LeanbackPlayerAdapter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
 import dev.alaev.rezkatv.R
 import dev.alaev.rezkatv.rezka.ChoicePanel
 import dev.alaev.rezkatv.rezka.Details
@@ -75,6 +69,12 @@ import dev.alaev.rezkatv.session.ResumePlanner
 import dev.alaev.rezkatv.session.SessionStore
 import dev.alaev.rezkatv.session.SitePosition
 import dev.alaev.rezkatv.session.WatchSession
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 @UnstableApi
 class PlayerActivity : FragmentActivity() {

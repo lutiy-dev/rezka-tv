@@ -154,7 +154,7 @@
             android:layout_width="72dp"
             android:layout_height="72dp"
             android:gravity="center"
-            android:text="−10"
+            android:text="@string/mobile_rewind"
             android:textColor="@android:color/white"
             android:textSize="22sp"
             android:textStyle="bold" />
@@ -165,7 +165,7 @@
             android:layout_height="88dp"
             android:layout_marginHorizontal="32dp"
             android:gravity="center"
-            android:text="▶"
+            android:text="@string/mobile_play"
             android:textColor="@android:color/white"
             android:textSize="34sp"
             android:textStyle="bold" />
@@ -175,7 +175,7 @@
             android:layout_width="72dp"
             android:layout_height="72dp"
             android:gravity="center"
-            android:text="+10"
+            android:text="@string/mobile_forward"
             android:textColor="@android:color/white"
             android:textSize="22sp"
             android:textStyle="bold" />

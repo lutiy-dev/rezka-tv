@@ -60,6 +60,7 @@ import dev.alaev.rezkatv.rezka.PlayLink
 import dev.alaev.rezkatv.rezka.Progress
 import dev.alaev.rezkatv.rezka.Quality
 import dev.alaev.rezkatv.rezka.QualityPicker
+import dev.alaev.rezkatv.rezka.ResponsiveLayout
 import dev.alaev.rezkatv.rezka.ResumeStore
 import dev.alaev.rezkatv.rezka.RezkaClient
 import dev.alaev.rezkatv.rezka.Settings
@@ -100,6 +101,8 @@ class PlayerActivity : FragmentActivity() {
     private lateinit var nextUpCountdown: TextView
     private lateinit var nextUpProgress: ProgressBar
     private lateinit var errorView: TextView
+    private lateinit var mobileControls: View
+    private lateinit var mobilePlayPause: TextView
 
     private var details: Details? = null
     private var translator: Translator? = null
@@ -138,6 +141,7 @@ class PlayerActivity : FragmentActivity() {
     }
     private val commitSeek = Runnable { commitSeek() }
     private val hideOsd = Runnable { osd.visibility = View.GONE }
+    private val hideMobileControls = Runnable { mobileControls.visibility = View.GONE }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -160,6 +164,8 @@ class PlayerActivity : FragmentActivity() {
         nextUpCountdown = findViewById(R.id.next_up_countdown)
         nextUpProgress = findViewById(R.id.next_up_progress)
         errorView = findViewById(R.id.error)
+        mobileControls = findViewById(R.id.mobile_controls)
+        mobilePlayPause = findViewById(R.id.mobile_play_pause)
         loadingTitle.text = intent.getStringExtra(EXTRA_TITLE)
         subtitlesView.setStyle(
             CaptionStyleCompat(Color.WHITE, Color.TRANSPARENT, Color.TRANSPARENT, CaptionStyleCompat.EDGE_TYPE_DROP_SHADOW, Color.BLACK, null),
@@ -174,6 +180,7 @@ class PlayerActivity : FragmentActivity() {
             override fun onFadeInComplete() = subtitlesView.setBottomPaddingFraction(SUBTITLES_ABOVE_CONTROLS)
             override fun onFadeOutComplete() = subtitlesView.setBottomPaddingFraction(SUBTITLES_BOTTOM)
         })
+        setupMobileControls()
 
         load()
     }
@@ -423,6 +430,7 @@ class PlayerActivity : FragmentActivity() {
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
+            updateMobilePlayIcon()
             if (!isPlaying && !player.playWhenReady) handler.post {
                 if (!player.playWhenReady && seekProvider?.seeking != true) saveProgress(toServer = true)
             }
@@ -523,6 +531,45 @@ class PlayerActivity : FragmentActivity() {
     private fun togglePlay() {
         val g = glue ?: return
         if (player.playWhenReady && player.playbackState != Player.STATE_ENDED) g.pause() else g.play()
+    }
+
+    private fun setupMobileControls() {
+        if (!ResponsiveLayout.isPhone(resources.configuration.smallestScreenWidthDp)) {
+            return
+        }
+        val touchSurface = findViewById<View>(R.id.mobile_touch_surface)
+        touchSurface.visibility = View.VISIBLE
+        touchSurface.setOnClickListener { showMobileControls() }
+        findViewById<View>(R.id.mobile_rewind).setOnClickListener {
+            seekBy(-settings.seekStepMs)
+            showMobileControls()
+        }
+        mobilePlayPause.setOnClickListener {
+            togglePlay()
+            showMobileControls()
+        }
+        findViewById<View>(R.id.mobile_forward).setOnClickListener {
+            seekBy(settings.seekStepMs)
+            showMobileControls()
+        }
+        mobileControls.setOnClickListener { mobileControls.visibility = View.GONE }
+        showMobileControls()
+    }
+
+    private fun showMobileControls() {
+        if (!ResponsiveLayout.isPhone(resources.configuration.smallestScreenWidthDp)) {
+            return
+        }
+        updateMobilePlayIcon()
+        mobileControls.visibility = View.VISIBLE
+        handler.removeCallbacks(hideMobileControls)
+        handler.postDelayed(hideMobileControls, MOBILE_CONTROLS_HIDE_MS)
+    }
+
+    private fun updateMobilePlayIcon() {
+        if (::mobilePlayPause.isInitialized) {
+            mobilePlayPause.text = if (player.playWhenReady && player.playbackState != Player.STATE_ENDED) "Ⅱ" else "▶"
+        }
     }
 
     private fun seekBy(deltaMs: Long) {
@@ -839,6 +886,7 @@ class PlayerActivity : FragmentActivity() {
         private const val SEEK_COMMIT_MS = 1500L
         private const val OSD_MS = 3000L
         private const val OSD_LONG_MS = 6000L
+        private const val MOBILE_CONTROLS_HIDE_MS = 3500L
         private const val LOCAL_SAVE_MS = 10_000L
         private const val SERVER_SAVE_MS = 60_000L
         private const val WAKE_SYNC_AFTER_MS = 60_000L

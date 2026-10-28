@@ -105,8 +105,11 @@ object UpdateManager {
         connection.readTimeout = 8_000
         connection.setRequestProperty("User-Agent", "Rezka-TV/${BuildConfig.VERSION_NAME}")
         return try {
-            if (connection.responseCode !in 200..299) null
-            else JSONObject(connection.inputStream.bufferedReader().use { it.readText() })
+            if (connection.responseCode !in 200..299) {
+                null
+            } else {
+                JSONObject(connection.inputStream.bufferedReader().use { it.readText() })
+            }
         } finally {
             connection.disconnect()
         }

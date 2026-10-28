@@ -25,7 +25,7 @@ object UpdateManager {
     private const val MANIFEST_URL = "https://github.com/lutiy-dev/rezka-tv/releases/latest/download/update.json"
     private const val RELEASE_API = "https://api.github.com/repos/lutiy-dev/rezka-tv/releases/latest"
     private const val PREFS = "rezka_update"
-    private const val KEY_LAST_CHECK = "last_check"
+    private const val KEY_LAST_SUCCESSFUL_CHECK = "last_successful_check"
     private const val CHECK_INTERVAL_MS = 24L * 60L * 60L * 1000L
     private const val APK_MIME = "application/vnd.android.package-archive"
 
@@ -34,13 +34,16 @@ object UpdateManager {
     fun check(activity: Activity, force: Boolean = false) {
         val prefs = activity.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val now = System.currentTimeMillis()
-        if (!force && now - prefs.getLong(KEY_LAST_CHECK, 0L) < CHECK_INTERVAL_MS) {
+        if (!force && now - prefs.getLong(KEY_LAST_SUCCESSFUL_CHECK, 0L) < CHECK_INTERVAL_MS) {
             return
         }
-        prefs.edit().putLong(KEY_LAST_CHECK, now).apply()
         thread(name = "rezka-update-check") {
-            val release = runCatching { fetchManifestRelease() }.getOrNull()
-                ?: runCatching { fetchApiRelease() }.getOrNull()
+            val manifest = runCatching { fetchManifestRelease() }.getOrNull()
+            val api = runCatching { fetchApiRelease() }.getOrNull()
+            val release = newest(manifest, api)
+            if (manifest != null || api != null) {
+                prefs.edit().putLong(KEY_LAST_SUCCESSFUL_CHECK, now).apply()
+            }
             if (!activity.isFinishing && !activity.isDestroyed) {
                 activity.runOnUiThread {
                     when {
@@ -68,9 +71,11 @@ object UpdateManager {
 
     private fun fetchApiRelease(): Release? {
         val connection = URL(RELEASE_API).openConnection() as HttpURLConnection
+        connection.useCaches = false
         connection.connectTimeout = 8_000
         connection.readTimeout = 8_000
         connection.setRequestProperty("Accept", "application/vnd.github+json")
+        connection.setRequestProperty("Cache-Control", "no-cache")
         connection.setRequestProperty("User-Agent", "Rezka-TV/${BuildConfig.VERSION_NAME}")
         return try {
             check(connection.responseCode in 200..299) { "GitHub API HTTP ${connection.responseCode}" }
@@ -99,8 +104,10 @@ object UpdateManager {
     private fun fetchJson(url: String): JSONObject? {
         val connection = URL(url).openConnection() as HttpURLConnection
         connection.instanceFollowRedirects = true
+        connection.useCaches = false
         connection.connectTimeout = 8_000
         connection.readTimeout = 8_000
+        connection.setRequestProperty("Cache-Control", "no-cache")
         connection.setRequestProperty("User-Agent", "Rezka-TV/${BuildConfig.VERSION_NAME}")
         return try {
             if (connection.responseCode !in 200..299) {
@@ -133,13 +140,14 @@ object UpdateManager {
             )
             return
         }
-        val manager = activity.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        val appContext = activity.applicationContext
+        val manager = appContext.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
         val fileName = "Rezka-TV-${release.version}.apk"
         val request = DownloadManager.Request(Uri.parse(release.apkUrl))
             .setTitle(fileName)
             .setMimeType(APK_MIME)
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            .setDestinationInExternalFilesDir(activity, Environment.DIRECTORY_DOWNLOADS, fileName)
+            .setDestinationInExternalFilesDir(appContext, Environment.DIRECTORY_DOWNLOADS, fileName)
         val downloadId = manager.enqueue(request)
         Toast.makeText(activity, R.string.update_downloading, Toast.LENGTH_SHORT).show()
 
@@ -150,12 +158,12 @@ object UpdateManager {
                 ) {
                     return
                 }
-                runCatching { activity.unregisterReceiver(this) }
+                runCatching { appContext.unregisterReceiver(this) }
                 val uri = manager.getUriForDownloadedFile(downloadId)
                 if (uri == null) {
                     Toast.makeText(activity, R.string.update_download_failed, Toast.LENGTH_LONG).show()
                 } else {
-                    activity.startActivity(
+                    appContext.startActivity(
                         Intent(Intent.ACTION_VIEW)
                             .setDataAndType(uri, APK_MIME)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION),
@@ -164,15 +172,22 @@ object UpdateManager {
             }
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            activity.registerReceiver(
+            appContext.registerReceiver(
                 receiver,
                 IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
                 Context.RECEIVER_EXPORTED,
             )
         } else {
             @Suppress("DEPRECATION", "UnspecifiedRegisterReceiverFlag")
-            activity.registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+            appContext.registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
         }
+    }
+
+    internal fun newest(first: Release?, second: Release?): Release? = when {
+        first == null -> second
+        second == null -> first
+        isNewer(second.version, first.version) -> second
+        else -> first
     }
 
     internal fun isNewer(candidate: String, current: String): Boolean {

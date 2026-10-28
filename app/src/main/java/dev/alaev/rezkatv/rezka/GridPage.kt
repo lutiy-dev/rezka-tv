@@ -23,6 +23,7 @@ class GridPage(
     private val info: TextView = activity.findViewById(R.id.grid_info)
     private val grid: VerticalGridView = activity.findViewById(R.id.grid)
     private val adapter = CardAdapter(onFocus = ::showInfo, onClick = { activity.openDetails(it) })
+    private val columns = ResponsiveLayout.gridColumns(activity.resources.configuration.screenWidthDp)
 
     private var category: Category? = null
     private var sort = Sort.POPULAR
@@ -33,7 +34,7 @@ class GridPage(
     val isVisible get() = page.visibility == View.VISIBLE
 
     init {
-        grid.setNumColumns(COLUMNS)
+        grid.setNumColumns(columns)
         grid.pinFocusToStart(grid.paddingTop)
         val spacing = activity.resources.getDimensionPixelSize(R.dimen.card_spacing)
         grid.horizontalSpacing = spacing + spacing / 2
@@ -61,7 +62,7 @@ class GridPage(
     }
 
     fun onBack(): Boolean {
-        if (grid.selectedPosition < COLUMNS) return false
+        if (grid.selectedPosition < columns) return false
         grid.setSelectedPositionSmooth(0)
         return true
     }
@@ -127,7 +128,6 @@ class GridPage(
     }
 
     private companion object {
-        const val COLUMNS = 6
         const val CACHE_TTL_MS = 15 * 60_000L
     }
 }

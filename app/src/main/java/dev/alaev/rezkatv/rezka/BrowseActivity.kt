@@ -7,15 +7,16 @@ import android.os.Process
 import android.view.FocusFinder
 import android.view.KeyEvent
 import android.view.View
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.leanback.widget.BrowseFrameLayout
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
 import dev.alaev.rezkatv.R
 import dev.alaev.rezkatv.rezka.lists.ListsAssets
 import dev.alaev.rezkatv.rezka.lists.OscarPage
 import dev.alaev.rezkatv.rezka.lists.TitleMarks
 import dev.alaev.rezkatv.rezka.lists.TopPage
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 
 class BrowseActivity : Activity() {
 
@@ -43,6 +44,10 @@ class BrowseActivity : Activity() {
         setContentView(R.layout.activity_browse)
 
         root = findViewById(R.id.root)
+        if (ResponsiveLayout.isCompact(resources.configuration.screenWidthDp)) {
+            findViewById<View>(R.id.clock).visibility = View.GONE
+            findViewById<LinearLayout>(R.id.grid_header).orientation = LinearLayout.VERTICAL
+        }
         val loader = Loader(this, findViewById<TextView>(R.id.status))
         home = HomePage(this, client, scope, loader, ResumeStore(this), liteMode)
         grid = GridPage(this, client, scope, loader)

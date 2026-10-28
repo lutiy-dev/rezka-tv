@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="screen_padding">16dp</dimen>
+    <dimen name="rail_width">48dp</dimen>
+    <dimen name="rail_expanded_width">160dp</dimen>
+    <dimen name="content_padding">12dp</dimen>
+    <dimen name="hero_text_width">250dp</dimen>
+    <dimen name="hero_art_width">0dp</dimen>
+    <dimen name="hero_art_height">0dp</dimen>
+    <dimen name="rows_top">170dp</dimen>
+    <dimen name="card_width">96dp</dimen>
+    <dimen name="card_height">144dp</dimen>
+    <dimen name="card_spacing">10dp</dimen>
+    <dimen name="card_focus_overflow">4dp</dimen>
+    <dimen name="row_height">168dp</dimen>
+    <dimen name="chip_spacing">6dp</dimen>
+    <dimen name="panel_width">320dp</dimen>
+    <dimen name="login_qr_size">180dp</dimen>
+</resources>

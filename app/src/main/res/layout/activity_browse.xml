@@ -87,6 +87,7 @@
             android:visibility="gone">
 
             <LinearLayout
+                android:id="@+id/grid_header"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
@@ -156,6 +157,7 @@
         android:paddingEnd="8dp" />
 
     <TextClock
+        android:id="@+id/clock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"

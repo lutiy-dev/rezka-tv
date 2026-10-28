@@ -21,9 +21,9 @@ class UpdateManagerTest {
 
     @Test
     fun detectsPatchUpdate() {
-        val versions = "1.1.2" to "1.1.0"
+        val versions = "1.1.4" to "1.1.3"
         val actual = UpdateManager.isNewer(versions.first, versions.second)
         val expected = true
-        assertThat("patch update is detected", actual, `is`(expected))
+        assertThat("next patch update is detected", actual, `is`(expected))
     }
 }

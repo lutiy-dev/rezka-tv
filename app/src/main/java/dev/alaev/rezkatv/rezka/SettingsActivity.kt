@@ -41,6 +41,10 @@ class SettingsActivity : FragmentActivity() {
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.settings, rootKey)
             findPreference<Preference>("version")?.summary = BuildConfig.VERSION_NAME
+            findPreference<Preference>("check_updates")?.setOnPreferenceClickListener {
+                UpdateManager.check(requireActivity(), force = true)
+                true
+            }
             findPreference<Preference>("open_site")?.setOnPreferenceClickListener {
                 requireActivity().openSite()
                 true

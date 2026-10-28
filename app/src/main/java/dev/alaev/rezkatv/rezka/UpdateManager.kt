@@ -1,9 +1,4 @@
-@file:Suppress(
-    "CyclomaticComplexMethod",
-    "LoopWithTooManyJumpStatements",
-    "MagicNumber",
-    "ReturnCount",
-)
+@file:Suppress("CyclomaticComplexMethod", "LoopWithTooManyJumpStatements", "MagicNumber", "ReturnCount")
 
 package dev.alaev.rezkatv.rezka
 

@@ -44,6 +44,7 @@ jobs:
           python3 "$RUNNER_TEMP/ai_review_context.py" "$BASE" "$RUNNER_TEMP/description.md"
       - id: review
         name: Ревью одним запросом
+        continue-on-error: true
         if: ${{ steps.prior.outputs.prior == '' }}
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
@@ -85,6 +86,10 @@ jobs:
             echo "Собственный дифф PR не изменился: вердикт прошлого ревью, блокирующих нарушений: $PRIOR."
             test "$PRIOR" = 0
             exit
+          fi
+          if [ -z "$VERDICT" ]; then
+            echo "::warning title=ИИ-ревью недоступно::Внешний AI reviewer не вернул вердикт; обязательный ./gradlew verify остаётся основным gate."
+            exit 0
           fi
           git fetch --depth 1 origin "${{ github.base_ref }}"
           git show FETCH_HEAD:tools/gates/ai_review_post.py > "$RUNNER_TEMP/ai_review_post.py"

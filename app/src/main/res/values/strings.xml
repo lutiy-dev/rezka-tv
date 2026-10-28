@@ -122,4 +122,13 @@
     <string name="login_status_too_many">%1$s. Попытки закончились — нажмите «Новый код»</string>
     <string name="login_status_no_network">Телевизор не в локальной сети. Войдите на телевизоре</string>
     <string name="login_status_no_port">Не удалось открыть порт для телефона. Войдите на телевизоре</string>
+    <string name="update_available_title">Доступно обновление</string>
+    <string name="update_available_message">Новая версия Rezka TV: %1$s</string>
+    <string name="update_action">Обновить</string>
+    <string name="update_later">Позже</string>
+    <string name="update_up_to_date">Установлена актуальная версия</string>
+    <string name="update_check_failed">Не удалось проверить обновления</string>
+    <string name="update_allow_install">Разрешите Rezka TV устанавливать неизвестные приложения, затем нажмите «Обновить» ещё раз</string>
+    <string name="update_downloading">Загрузка обновления…</string>
+    <string name="update_download_failed">Не удалось скачать обновление</string>
 </resources>

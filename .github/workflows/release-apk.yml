@@ -56,7 +56,9 @@ jobs:
           KEY_ALIAS: ${{ secrets.REZKA_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.REZKA_KEY_PASSWORD }}
         run: |
-          printf '%s' "$KEYSTORE_B64" | base64 --decode > rezka-tv-release.jks
+          CLEAN_KEYSTORE_B64="$(printf '%s' "$KEYSTORE_B64" | sed 's/^REZKA_KEYSTORE_B64=//' | tr -d '\r\n\t ')"
+          printf '%s' "$CLEAN_KEYSTORE_B64" | base64 --decode > rezka-tv-release.jks
+          test -s rezka-tv-release.jks
           cat > keystore.properties <<EOF
           storeFile=rezka-tv-release.jks
           storePassword=$STORE_PASSWORD

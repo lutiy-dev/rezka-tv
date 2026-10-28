@@ -184,7 +184,7 @@ object UpdateManager {
     }
 
     internal fun isTrustedApkUrl(value: String): Boolean {
-        val uri = Uri.parse(value)
+        val uri = runCatching { java.net.URI(value) }.getOrNull() ?: return false
         return uri.scheme == "https" && uri.host == "github.com" &&
             uri.path?.startsWith("/lutiy-dev/rezka-tv/releases/download/") == true &&
             uri.path?.endsWith(".apk") == true && uri.query == null && uri.fragment == null

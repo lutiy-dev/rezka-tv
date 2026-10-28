@@ -27,6 +27,13 @@ class ResponsiveLayoutTest {
     }
 
     @Test
+    fun keepsTvOutOfPhoneMode() {
+        val actual = ResponsiveLayout.isPhone(720)
+        val expected = false
+        assertThat("TV-sized device is not phone mode", actual, `is`(expected))
+    }
+
+    @Test
     fun usesTwoGridColumnsOnPhone() {
         val actual = ResponsiveLayout.gridColumns(360)
         val expected = 2

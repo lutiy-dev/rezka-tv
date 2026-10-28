@@ -68,6 +68,7 @@ class BrowseActivity : Activity() {
         }
 
         home.load()
+        UpdateManager.check(this)
     }
 
     override fun onRestart() {

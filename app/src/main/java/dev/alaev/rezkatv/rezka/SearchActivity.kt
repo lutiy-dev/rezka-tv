@@ -45,7 +45,7 @@ class SearchActivity : Activity() {
 
         results = CardAdapter(onClick = { openDetails(it) })
         findViewById<VerticalGridView>(R.id.results).apply {
-            setNumColumns(RESULT_COLUMNS)
+            setNumColumns(ResponsiveLayout.searchColumns(resources.configuration.screenWidthDp))
             val spacing = resources.getDimensionPixelSize(R.dimen.card_spacing)
             horizontalSpacing = spacing
             verticalSpacing = spacing
@@ -125,7 +125,6 @@ class SearchActivity : Activity() {
         private const val CLEAR = "✕"
         private val EDIT_KEYS = listOf(SPACE, BACKSPACE, CLEAR)
         private const val KEY_COLUMNS = 6
-        private const val RESULT_COLUMNS = 4
         private const val MIN_QUERY = 2
         private const val TYPING_PAUSE_MS = 600L
     }

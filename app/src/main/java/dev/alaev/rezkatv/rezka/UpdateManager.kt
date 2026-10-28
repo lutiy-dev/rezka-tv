@@ -13,6 +13,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import dev.alaev.rezkatv.BuildConfig
 import dev.alaev.rezkatv.R
 import org.json.JSONObject
@@ -144,13 +145,12 @@ object UpdateManager {
                 }
             }
         }
-        val filter = IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            activity.registerReceiver(receiver, filter, Context.RECEIVER_EXPORTED)
-        } else {
-            @Suppress("DEPRECATION")
-            activity.registerReceiver(receiver, filter)
-        }
+        ContextCompat.registerReceiver(
+            activity,
+            receiver,
+            IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
+            ContextCompat.RECEIVER_EXPORTED,
+        )
     }
 
     internal fun isNewer(candidate: String, current: String): Boolean {

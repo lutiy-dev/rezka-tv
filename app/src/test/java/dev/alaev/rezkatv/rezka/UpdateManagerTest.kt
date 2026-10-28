@@ -1,33 +1,33 @@
 package dev.alaev.rezkatv.rezka
 
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.`is`
 import org.junit.jupiter.api.Test
 
 class UpdateManagerTest {
 
     @Test
     fun detectsNewerSemanticVersion() {
-        assertTrue(UpdateManager.isNewer("1.1.0", "1.0"))
+        assertThat("newer semantic version is detected", UpdateManager.isNewer("1.1.0", "1.0"), `is`(true))
     }
 
     @Test
     fun detectsNewerMajorVersion() {
-        assertTrue(UpdateManager.isNewer("2.0", "1.99.99"))
+        assertThat("newer major version is detected", UpdateManager.isNewer("2.0", "1.99.99"), `is`(true))
     }
 
     @Test
     fun ignoresSameVersion() {
-        assertFalse(UpdateManager.isNewer("1.1.0", "1.1.0"))
+        assertThat("same version is ignored", UpdateManager.isNewer("1.1.0", "1.1.0"), `is`(false))
     }
 
     @Test
     fun ignoresOlderVersion() {
-        assertFalse(UpdateManager.isNewer("1.0.9", "1.1.0"))
+        assertThat("older version is ignored", UpdateManager.isNewer("1.0.9", "1.1.0"), `is`(false))
     }
 
     @Test
     fun rejectsInvalidVersion() {
-        assertFalse(UpdateManager.isNewer("not-a-version", "1.1.0"))
+        assertThat("invalid version is rejected", UpdateManager.isNewer("not-a-version", "1.1.0"), `is`(false))
     }
 }

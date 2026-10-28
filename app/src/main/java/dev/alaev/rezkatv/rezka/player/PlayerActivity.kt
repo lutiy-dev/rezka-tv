@@ -542,7 +542,7 @@ class PlayerActivity : FragmentActivity() {
             errorView.visibility == View.VISIBLE && ok -> { if (!down) retry(); return true }
             nextUp.visibility == View.VISIBLE && back -> { if (!down) dismissNextUp(); return true }
             nextUp.visibility == View.VISIBLE && ok -> { if (!down) switchEpisode(forward = true); return true }
-            glue == null && !back -> return true
+            !phoneMode && glue == null && !back -> return true
         }
         if (down && event.repeatCount == 0) {
             when (key) {
@@ -558,6 +558,10 @@ class PlayerActivity : FragmentActivity() {
     }
 
     private fun togglePlay() {
+        if (phoneMode) {
+            if (player.playWhenReady && player.playbackState != Player.STATE_ENDED) player.pause() else player.play()
+            return
+        }
         val g = glue ?: return
         if (player.playWhenReady && player.playbackState != Player.STATE_ENDED) g.pause() else g.play()
     }
@@ -613,7 +617,7 @@ class PlayerActivity : FragmentActivity() {
     private fun seekBy(deltaMs: Long) {
         val duration = player.duration.takeIf { it != C.TIME_UNSET } ?: return
         player.seekTo((player.currentPosition + deltaMs).coerceIn(0, duration))
-        fragment.tickle()
+        if (!phoneMode) fragment.tickle()
     }
 
     private fun commitSeek() {

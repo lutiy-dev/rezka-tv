@@ -42,6 +42,7 @@ class HomePage(
     private val heroExtra: TextView = activity.findViewById(R.id.hero_extra)
     private val heroDescription: TextView = activity.findViewById(R.id.hero_description)
 
+    private val compact = ResponsiveLayout.isCompact(activity.resources.configuration.screenWidthDp)
     private val shelves = Shelf.entries.filter { !lite || it.inLiteMode }
     private val rows = mutableListOf<ShelfRow>()
     private val rowsAdapter = RowsAdapter()
@@ -59,12 +60,12 @@ class HomePage(
         rowsView.pinFocusToStart(0)
         rowsView.setItemViewCacheSize(shelves.size)
         heroDescription.maxLines = if (lite) 2 else 3
-        if (lite) heroArtBox.visibility = View.GONE
+        if (lite || compact) heroArtBox.visibility = View.GONE
     }
 
     fun show() {
         page.visibility = View.VISIBLE
-        if (!lite) heroArtBox.visibility = View.VISIBLE
+        if (!lite && !compact) heroArtBox.visibility = View.VISIBLE
         focusedCard?.let(::showHero)
     }
 
@@ -170,13 +171,13 @@ class HomePage(
         if (cached != null) showHeroDetails(card, cached)
         heroJob = scope.launch {
             delay(HERO_ART_DELAY_MS)
-            if (!lite) Images.art(heroArt, cached?.poster.orEmpty(), card.poster)
+            if (!lite && !compact) Images.art(heroArt, cached?.poster.orEmpty(), card.poster)
             if (cached != null) return@launch
             delay(HERO_DETAILS_DELAY_MS)
             val details = loader.quietly { client.details(card.url) }
             if (details != null && focusedCard == card) {
                 showHeroDetails(card, details)
-                if (!lite) Images.art(heroArt, details.poster, card.poster)
+                if (!lite && !compact) Images.art(heroArt, details.poster, card.poster)
             }
         }
     }

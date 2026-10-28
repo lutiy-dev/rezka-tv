@@ -39,25 +39,20 @@ object UpdateManager {
         }
         prefs.edit().putLong(KEY_LAST_CHECK, now).apply()
         thread(name = "rezka-update-check") {
-            runCatching { fetchManifestRelease() ?: fetchApiRelease() }
-                .onSuccess { release ->
-                    if (!activity.isFinishing && !activity.isDestroyed) {
-                        activity.runOnUiThread {
-                            if (release != null && isNewer(release.version, BuildConfig.VERSION_NAME)) {
-                                showUpdateDialog(activity, release)
-                            } else if (force) {
-                                Toast.makeText(activity, R.string.update_up_to_date, Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    }
-                }
-                .onFailure {
-                    if (force && !activity.isFinishing && !activity.isDestroyed) {
-                        activity.runOnUiThread {
+            val release = runCatching { fetchManifestRelease() }.getOrNull()
+                ?: runCatching { fetchApiRelease() }.getOrNull()
+            if (!activity.isFinishing && !activity.isDestroyed) {
+                activity.runOnUiThread {
+                    when {
+                        release != null && isNewer(release.version, BuildConfig.VERSION_NAME) ->
+                            showUpdateDialog(activity, release)
+                        release != null && force ->
+                            Toast.makeText(activity, R.string.update_up_to_date, Toast.LENGTH_SHORT).show()
+                        force ->
                             Toast.makeText(activity, R.string.update_check_failed, Toast.LENGTH_SHORT).show()
-                        }
                     }
                 }
+            }
         }
     }
 

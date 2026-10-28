@@ -22,6 +22,7 @@ import kotlin.concurrent.thread
 import android.provider.Settings as AndroidSettings
 
 object UpdateManager {
+    private const val MANIFEST_URL = "https://github.com/lutiy-dev/rezka-tv/releases/latest/download/update.json"
     private const val RELEASE_API = "https://api.github.com/repos/lutiy-dev/rezka-tv/releases/latest"
     private const val PREFS = "rezka_update"
     private const val KEY_LAST_CHECK = "last_check"
@@ -38,7 +39,7 @@ object UpdateManager {
         }
         prefs.edit().putLong(KEY_LAST_CHECK, now).apply()
         thread(name = "rezka-update-check") {
-            runCatching { fetchLatestRelease() }
+            runCatching { fetchManifestRelease() ?: fetchApiRelease() }
                 .onSuccess { release ->
                     if (!activity.isFinishing && !activity.isDestroyed) {
                         activity.runOnUiThread {
@@ -60,16 +61,21 @@ object UpdateManager {
         }
     }
 
-    private fun fetchLatestRelease(): Release? {
+    private fun fetchManifestRelease(): Release? {
+        val json = fetchJson(MANIFEST_URL) ?: return null
+        val version = json.optString("version")
+        val apkUrl = json.optString("apkUrl")
+        return if (version.isBlank() || apkUrl.isBlank()) null else Release(version, apkUrl)
+    }
+
+    private fun fetchApiRelease(): Release? {
         val connection = URL(RELEASE_API).openConnection() as HttpURLConnection
         connection.connectTimeout = 8_000
         connection.readTimeout = 8_000
         connection.setRequestProperty("Accept", "application/vnd.github+json")
         connection.setRequestProperty("User-Agent", "Rezka-TV/${BuildConfig.VERSION_NAME}")
         return try {
-            if (connection.responseCode !in 200..299) {
-                return null
-            }
+            check(connection.responseCode in 200..299) { "GitHub API HTTP ${connection.responseCode}" }
             val json = JSONObject(connection.inputStream.bufferedReader().use { it.readText() })
             if (json.optBoolean("draft") || json.optBoolean("prerelease")) {
                 return null
@@ -87,6 +93,20 @@ object UpdateManager {
                 }
             }
             if (tag.isBlank() || apkUrl.isBlank()) null else Release(tag, apkUrl)
+        } finally {
+            connection.disconnect()
+        }
+    }
+
+    private fun fetchJson(url: String): JSONObject? {
+        val connection = URL(url).openConnection() as HttpURLConnection
+        connection.instanceFollowRedirects = true
+        connection.connectTimeout = 8_000
+        connection.readTimeout = 8_000
+        connection.setRequestProperty("User-Agent", "Rezka-TV/${BuildConfig.VERSION_NAME}")
+        return try {
+            if (connection.responseCode !in 200..299) null
+            else JSONObject(connection.inputStream.bufferedReader().use { it.readText() })
         } finally {
             connection.disconnect()
         }

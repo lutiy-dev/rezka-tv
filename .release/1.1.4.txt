@@ -1,0 +1,6 @@
+Rezka TV 1.1.4 Stability
+- Native Media3 phone player with timeline and full-screen fit
+- Mobile row edge alignment
+- Hardened updater source selection and cache behavior
+- Stabilized release/build workflows
+- AI review degrades gracefully when provider is unavailable

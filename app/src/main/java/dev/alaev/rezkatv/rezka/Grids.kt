@@ -10,3 +10,11 @@ fun BaseGridView.pinFocusToStart(offsetPx: Int) {
     itemAlignmentOffsetPercent = 0f
     itemAlignmentOffset = 0
 }
+
+
+fun BaseGridView.keepFocusInsideEdges() {
+    itemAnimator = null
+    windowAlignment = BaseGridView.WINDOW_ALIGN_BOTH_EDGE
+    windowAlignmentOffsetPercent = 50f
+    itemAlignmentOffsetPercent = 50f
+}

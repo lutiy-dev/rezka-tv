@@ -66,7 +66,7 @@ object UpdateManager {
         val json = fetchJson(MANIFEST_URL) ?: return null
         val version = json.optString("version")
         val apkUrl = json.optString("apkUrl")
-        return if (version.isBlank() || apkUrl.isBlank()) null else Release(version, apkUrl)
+        return if (version.isBlank() || !isTrustedApkUrl(apkUrl)) null else Release(version, apkUrl)
     }
 
     private fun fetchApiRelease(): Release? {
@@ -95,7 +95,7 @@ object UpdateManager {
                     }
                 }
             }
-            if (tag.isBlank() || apkUrl.isBlank()) null else Release(tag, apkUrl)
+            if (tag.isBlank() || !isTrustedApkUrl(apkUrl)) null else Release(tag, apkUrl)
         } finally {
             connection.disconnect()
         }
@@ -181,6 +181,13 @@ object UpdateManager {
             @Suppress("DEPRECATION", "UnspecifiedRegisterReceiverFlag")
             appContext.registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
         }
+    }
+
+    internal fun isTrustedApkUrl(value: String): Boolean {
+        val uri = Uri.parse(value)
+        return uri.scheme == "https" && uri.host == "github.com" &&
+            uri.path?.startsWith("/lutiy-dev/rezka-tv/releases/download/") == true &&
+            uri.path?.endsWith(".apk") == true && uri.query == null && uri.fragment == null
     }
 
     internal fun newest(first: Release?, second: Release?): Release? = when {

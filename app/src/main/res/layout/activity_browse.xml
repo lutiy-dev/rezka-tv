@@ -170,5 +170,15 @@
         android:textColor="@color/text"
         android:textSize="20sp" />
 
+    <LinearLayout
+        android:id="@+id/mobile_nav"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:layout_gravity="bottom"
+        android:background="@color/bg"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:visibility="gone" />
+
     <include layout="@layout/view_choice_panel" />
 </androidx.leanback.widget.BrowseFrameLayout>

@@ -31,6 +31,8 @@ class BrowseActivity : Activity() {
     private lateinit var choice: ChoicePanel
     private lateinit var root: BrowseFrameLayout
 
+    private val phoneMode by lazy { ResponsiveLayout.isCompact(resources.configuration.screenWidthDp) }
+    private var mobileNavigation: MobileNavigation? = null
     private var liteMode = false
     private var baseUrl = ""
 
@@ -44,7 +46,7 @@ class BrowseActivity : Activity() {
         setContentView(R.layout.activity_browse)
 
         root = findViewById(R.id.root)
-        if (ResponsiveLayout.isCompact(resources.configuration.screenWidthDp)) {
+        if (phoneMode) {
             findViewById<View>(R.id.clock).visibility = View.GONE
             findViewById<View>(R.id.hero_text).visibility = View.GONE
             findViewById<View>(R.id.hero_art_box).visibility = View.GONE
@@ -59,7 +61,18 @@ class BrowseActivity : Activity() {
         oscar = OscarPage(this, client, scope, marks)
         rail = NavRail(findViewById(R.id.rail), findViewById(R.id.rail_scrim), ::onSection) { ListsAssets.preload(this) }
 
-        root.onFocusSearchListener = BrowseFrameLayout.OnFocusSearchListener { focused, direction ->
+        if (phoneMode) {
+            findViewById<View>(R.id.rail).visibility = View.GONE
+            findViewById<View>(R.id.rail_scrim).visibility = View.GONE
+            val content = findViewById<View>(R.id.content)
+            val params = content.layoutParams as android.widget.FrameLayout.LayoutParams
+            params.leftMargin = 0
+            params.bottomMargin = (64 * resources.displayMetrics.density).toInt()
+            content.layoutParams = params
+            mobileNavigation = MobileNavigation(findViewById(R.id.mobile_nav), ::onSection)
+        }
+
+        if (!phoneMode) root.onFocusSearchListener = BrowseFrameLayout.OnFocusSearchListener { focused, direction ->
             when {
                 choice.isShowing && (direction == View.FOCUS_LEFT || direction == View.FOCUS_RIGHT) -> focused
                 direction == View.FOCUS_LEFT && !rail.contains(focused) -> {
@@ -110,6 +123,8 @@ class BrowseActivity : Activity() {
             grid.isVisible && grid.onBack() -> Unit
             top.isVisible && top.onBack() -> Unit
             oscar.isVisible && oscar.onBack() -> Unit
+            phoneMode && rail.selected != Section.HOME -> onSection(Section.HOME)
+            phoneMode -> finish()
             else -> rail.focus()
         }
     }
@@ -120,6 +135,7 @@ class BrowseActivity : Activity() {
             Section.SETTINGS -> startActivity(Intent(this, SettingsActivity::class.java))
             else -> {
                 rail.selected = section
+                mobileNavigation?.update(section)
                 if (section != Section.HOME) home.hide()
                 if (section.category == null) grid.hide()
                 if (section != Section.TOP) top.hide()

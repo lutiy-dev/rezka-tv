@@ -28,6 +28,20 @@ class UpdateManagerTest {
     }
 
     @Test
+    fun acceptsOfficialReleaseApk() {
+        val url = "https://github.com/lutiy-dev/rezka-tv/releases/download/v1.1.5/Rezka-TV-1.1.5.apk"
+        val actual = UpdateManager.isTrustedApkUrl(url)
+        assertThat("official APK URL is accepted", actual, `is`(true))
+    }
+
+    @Test
+    fun rejectsExternalReleaseApk() {
+        val url = "https://example.com/Rezka-TV-1.1.5.apk"
+        val actual = UpdateManager.isTrustedApkUrl(url)
+        assertThat("external APK URL is rejected", actual, `is`(false))
+    }
+
+    @Test
     fun selectsNewestReleaseSource() {
         val first = UpdateManager.Release("1.1.3", "manifest")
         val second = UpdateManager.Release("1.1.4", "api")

@@ -26,4 +26,13 @@ class UpdateManagerTest {
         val expected = true
         assertThat("next patch update is detected", actual, `is`(expected))
     }
+
+    @Test
+    fun selectsNewestReleaseSource() {
+        val first = UpdateManager.Release("1.1.3", "manifest")
+        val second = UpdateManager.Release("1.1.4", "api")
+        val actual = UpdateManager.newest(first, second)?.version
+        val expected = second.version
+        assertThat("freshest update source wins", actual, `is`(expected))
+    }
 }

@@ -15,5 +15,5 @@
     <dimen name="row_height">168dp</dimen>
     <dimen name="chip_spacing">6dp</dimen>
     <dimen name="panel_width">320dp</dimen>
-    <dimen name="login_qr_size">240dp</dimen>
+    <dimen name="login_qr_size">180dp</dimen>
 </resources>

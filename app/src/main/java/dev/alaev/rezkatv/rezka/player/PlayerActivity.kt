@@ -568,7 +568,16 @@ class PlayerActivity : FragmentActivity() {
 
     private fun updateMobilePlayIcon() {
         if (::mobilePlayPause.isInitialized) {
-            mobilePlayPause.setText(if (player.playWhenReady && player.playbackState != Player.STATE_ENDED) R.string.mobile_pause else R.string.mobile_play)
+            mobilePlayPause.setText(
+                if (
+                    player.playWhenReady &&
+                    player.playbackState != Player.STATE_ENDED
+                ) {
+                    R.string.mobile_pause
+                } else {
+                    R.string.mobile_play
+                },
+            )
         }
     }
 

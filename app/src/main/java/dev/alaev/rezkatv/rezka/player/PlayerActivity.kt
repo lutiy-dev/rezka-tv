@@ -37,7 +37,9 @@ import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
+import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.CaptionStyleCompat
+import androidx.media3.ui.PlayerView
 import androidx.media3.ui.SubtitleView
 import androidx.media3.ui.leanback.LeanbackPlayerAdapter
 import dev.alaev.rezkatv.R
@@ -101,6 +103,7 @@ class PlayerActivity : FragmentActivity() {
     private lateinit var nextUpCountdown: TextView
     private lateinit var nextUpProgress: ProgressBar
     private lateinit var errorView: TextView
+    private lateinit var mobilePlayerView: PlayerView
     private lateinit var mobileControls: View
     private lateinit var mobilePlayPause: TextView
 
@@ -121,6 +124,9 @@ class PlayerActivity : FragmentActivity() {
     private var stopped = false
     private var requestedPosition = RESUME
     private var autoplay = true
+    private val phoneMode by lazy {
+        ResponsiveLayout.isPhone(resources.configuration.smallestScreenWidthDp)
+    }
 
     private lateinit var sessions: SessionStore
     private var reported: SitePosition? = null
@@ -164,6 +170,7 @@ class PlayerActivity : FragmentActivity() {
         nextUpCountdown = findViewById(R.id.next_up_countdown)
         nextUpProgress = findViewById(R.id.next_up_progress)
         errorView = findViewById(R.id.error)
+        mobilePlayerView = findViewById(R.id.mobile_player)
         mobileControls = findViewById(R.id.mobile_controls)
         mobilePlayPause = findViewById(R.id.mobile_play_pause)
         loadingTitle.text = intent.getStringExtra(EXTRA_TITLE)
@@ -173,14 +180,11 @@ class PlayerActivity : FragmentActivity() {
         subtitlesView.setBottomPaddingFraction(SUBTITLES_BOTTOM)
 
         player = buildPlayer()
-        fragment = VideoSupportFragment()
-        supportFragmentManager.beginTransaction().replace(R.id.playback, fragment).commitNow()
-        fragment.backgroundType = PlaybackSupportFragment.BG_LIGHT
-        fragment.setFadeCompleteListener(object : PlaybackSupportFragment.OnFadeCompleteListener() {
-            override fun onFadeInComplete() = subtitlesView.setBottomPaddingFraction(SUBTITLES_ABOVE_CONTROLS)
-            override fun onFadeOutComplete() = subtitlesView.setBottomPaddingFraction(SUBTITLES_BOTTOM)
-        })
-        setupMobileControls()
+        if (phoneMode) {
+            setupPhonePlayer()
+        } else {
+            setupTvPlayer()
+        }
 
         load()
     }
@@ -219,6 +223,7 @@ class PlayerActivity : FragmentActivity() {
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
         scope.cancel()
+        mobilePlayerView.player = null
         player.release()
         super.onDestroy()
     }
@@ -302,7 +307,31 @@ class PlayerActivity : FragmentActivity() {
         }
     }
 
+    private fun setupPhonePlayer() {
+        findViewById<View>(R.id.playback).visibility = View.GONE
+        findViewById<View>(R.id.mobile_touch_surface).visibility = View.GONE
+        mobileControls.visibility = View.GONE
+        subtitlesView.visibility = View.GONE
+        mobilePlayerView.visibility = View.VISIBLE
+        mobilePlayerView.player = player
+        mobilePlayerView.resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+        mobilePlayerView.controllerShowTimeoutMs = MOBILE_CONTROLS_HIDE_MS.toInt()
+        mobilePlayerView.controllerAutoShow = true
+        mobilePlayerView.showController()
+    }
+
+    private fun setupTvPlayer() {
+        fragment = VideoSupportFragment()
+        supportFragmentManager.beginTransaction().replace(R.id.playback, fragment).commitNow()
+        fragment.backgroundType = PlaybackSupportFragment.BG_LIGHT
+        fragment.setFadeCompleteListener(object : PlaybackSupportFragment.OnFadeCompleteListener() {
+            override fun onFadeInComplete() = subtitlesView.setBottomPaddingFraction(SUBTITLES_ABOVE_CONTROLS)
+            override fun onFadeOutComplete() = subtitlesView.setBottomPaddingFraction(SUBTITLES_BOTTOM)
+        })
+    }
+
     private fun createGlue(series: Boolean) {
+        if (phoneMode) return
         val adapter = LeanbackPlayerAdapter(this, player, PROGRESS_UPDATE_MS)
         val g = PlayerGlue(this, adapter, series, ::onAction)
         g.host = VideoSupportFragmentGlueHost(fragment)
@@ -756,7 +785,7 @@ class PlayerActivity : FragmentActivity() {
         nextUpProgress.visibility = if (countdown) View.VISIBLE else View.GONE
         nextUpCountdown.visibility = if (countdown) View.VISIBLE else View.GONE
         if (countdown) renderCountdown(NEXT_UP_COUNTDOWN_MS)
-        fragment.hideControlsOverlay(true)
+        if (phoneMode) mobilePlayerView.hideController() else fragment.hideControlsOverlay(true)
         nextUp.visibility = View.VISIBLE
     }
 
@@ -782,7 +811,7 @@ class PlayerActivity : FragmentActivity() {
         when {
             next != null && settings.autoplayNext && !nextUpDismissed -> switchEpisode(forward = true)
             next != null && !nextUpDismissed -> showNextUp(next, countdown = false)
-            else -> fragment.showControlsOverlay(true)
+            else -> if (phoneMode) mobilePlayerView.showController() else fragment.showControlsOverlay(true)
         }
     }
 

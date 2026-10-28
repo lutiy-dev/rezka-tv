@@ -10,13 +10,13 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.leanback.widget.BrowseFrameLayout
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
 import dev.alaev.rezkatv.R
 import dev.alaev.rezkatv.rezka.lists.ListsAssets
 import dev.alaev.rezkatv.rezka.lists.OscarPage
 import dev.alaev.rezkatv.rezka.lists.TitleMarks
 import dev.alaev.rezkatv.rezka.lists.TopPage
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 
 class BrowseActivity : Activity() {
 

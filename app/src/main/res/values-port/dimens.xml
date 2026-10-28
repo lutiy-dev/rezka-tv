@@ -7,7 +7,7 @@
     <dimen name="hero_text_width">250dp</dimen>
     <dimen name="hero_art_width">0dp</dimen>
     <dimen name="hero_art_height">0dp</dimen>
-    <dimen name="rows_top">170dp</dimen>
+    <dimen name="rows_top">16dp</dimen>
     <dimen name="card_width">96dp</dimen>
     <dimen name="card_height">144dp</dimen>
     <dimen name="card_spacing">10dp</dimen>

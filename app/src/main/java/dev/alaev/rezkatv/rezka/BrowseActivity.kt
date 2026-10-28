@@ -46,6 +46,8 @@ class BrowseActivity : Activity() {
         root = findViewById(R.id.root)
         if (ResponsiveLayout.isCompact(resources.configuration.screenWidthDp)) {
             findViewById<View>(R.id.clock).visibility = View.GONE
+            findViewById<View>(R.id.hero_text).visibility = View.GONE
+            findViewById<View>(R.id.hero_art_box).visibility = View.GONE
             findViewById<LinearLayout>(R.id.grid_header).orientation = LinearLayout.VERTICAL
         }
         val loader = Loader(this, findViewById<TextView>(R.id.status))

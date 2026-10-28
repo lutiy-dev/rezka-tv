@@ -13,6 +13,13 @@ class ResponsiveLayoutTest {
     }
 
     @Test
+    fun detectsPhoneInLandscapeBySmallestWidth() {
+        val actual = ResponsiveLayout.isPhone(360)
+        val expected = true
+        assertThat("phone stays phone in landscape", actual, `is`(expected))
+    }
+
+    @Test
     fun usesTwoGridColumnsOnPhone() {
         val actual = ResponsiveLayout.gridColumns(360)
         val expected = 2

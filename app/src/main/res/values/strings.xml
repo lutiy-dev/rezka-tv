@@ -81,6 +81,10 @@
     <string name="next_up_play">▶  Смотреть</string>
     <string name="next_up_hint">OK — смотреть, Назад — остаться</string>
     <string name="player_error">Не удалось воспроизвести.\nOK — повторить, Назад — выйти</string>
+    <string name="mobile_rewind">−10</string>
+    <string name="mobile_play">▶</string>
+    <string name="mobile_pause">Ⅱ</string>
+    <string name="mobile_forward">+10</string>
     <string name="no_streams">Поток недоступен в приложении — открываю плеер сайта</string>
     <string name="resumed_other_device_episode">Продолжаем с %1$s — смотрели на другом устройстве</string>
     <string name="resumed_other_device_translator">Озвучка «%1$s» — выбрана на другом устройстве</string>

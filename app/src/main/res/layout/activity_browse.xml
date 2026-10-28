@@ -42,6 +42,7 @@
             android:layout_height="match_parent">
 
             <LinearLayout
+                android:id="@+id/hero_text"
                 android:layout_width="@dimen/hero_text_width"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="@dimen/content_padding"

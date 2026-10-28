@@ -57,7 +57,11 @@ class HomePage(
 
     init {
         rowsView.adapter = rowsAdapter
-        rowsView.pinFocusToStart(0)
+        if (ResponsiveLayout.useEdgeAwareRows(activity.resources.configuration.screenWidthDp)) {
+            rowsView.keepFocusInsideEdges()
+        } else {
+            rowsView.pinFocusToStart(0)
+        }
         rowsView.setItemViewCacheSize(shelves.size)
         heroDescription.maxLines = if (lite) 2 else 3
         if (lite || compact) heroArtBox.visibility = View.GONE

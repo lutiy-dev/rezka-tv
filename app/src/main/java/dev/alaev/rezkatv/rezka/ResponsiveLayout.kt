@@ -11,4 +11,5 @@ object ResponsiveLayout {
     fun isPhone(smallestWidthDp: Int) = smallestWidthDp <= COMPACT_MAX_WIDTH_DP
     fun gridColumns(widthDp: Int) = if (isCompact(widthDp)) PHONE_GRID_COLUMNS else TV_GRID_COLUMNS
     fun searchColumns(widthDp: Int) = if (isCompact(widthDp)) PHONE_SEARCH_COLUMNS else TV_SEARCH_COLUMNS
+    fun useEdgeAwareRows(widthDp: Int) = isCompact(widthDp)
 }

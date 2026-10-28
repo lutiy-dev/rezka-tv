@@ -20,6 +20,13 @@ class ResponsiveLayoutTest {
     }
 
     @Test
+    fun usesEdgeAwareRowsOnPhone() {
+        val actual = ResponsiveLayout.useEdgeAwareRows(360)
+        val expected = true
+        assertThat("phone rows stay inside screen edges", actual, `is`(expected))
+    }
+
+    @Test
     fun usesTwoGridColumnsOnPhone() {
         val actual = ResponsiveLayout.gridColumns(360)
         val expected = 2

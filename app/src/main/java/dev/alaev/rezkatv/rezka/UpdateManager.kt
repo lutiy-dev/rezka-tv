@@ -102,9 +102,7 @@ object UpdateManager {
     }
 
     private fun downloadAndInstall(activity: Activity, release: Release) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O &&
-            !activity.packageManager.canRequestPackageInstalls()
-        ) {
+        if (!activity.packageManager.canRequestPackageInstalls()) {
             Toast.makeText(activity, R.string.update_allow_install, Toast.LENGTH_LONG).show()
             activity.startActivity(
                 Intent(

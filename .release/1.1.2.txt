@@ -1,0 +1,2 @@
+Rezka TV 1.1.2
+Reliable update check with update.json manifest and GitHub API fallback.

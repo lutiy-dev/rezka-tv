@@ -64,6 +64,11 @@
             app:title="@string/pref_clear_cache" />
 
         <Preference
+            app:key="check_updates"
+            app:summary="@string/pref_check_updates_summary"
+            app:title="@string/pref_check_updates" />
+
+        <Preference
             app:key="version"
             app:selectable="false"
             app:title="@string/pref_version" />

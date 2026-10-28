@@ -1,0 +1,2 @@
+Rezka TV 1.1.1
+Mobile responsive UI and portrait QR scaling.

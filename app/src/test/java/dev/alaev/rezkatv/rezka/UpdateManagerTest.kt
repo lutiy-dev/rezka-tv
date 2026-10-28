@@ -18,4 +18,12 @@ class UpdateManagerTest {
         val expected = false
         assertThat("older version is ignored", actual, `is`(expected))
     }
+
+    @Test
+    fun detectsPatchUpdate() {
+        val versions = "1.1.2" to "1.1.0"
+        val actual = UpdateManager.isNewer(versions.first, versions.second)
+        val expected = true
+        assertThat("patch update is detected", actual, `is`(expected))
+    }
 }

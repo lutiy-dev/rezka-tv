@@ -8,6 +8,7 @@ object ResponsiveLayout {
     private const val TV_SEARCH_COLUMNS = 4
 
     fun isCompact(widthDp: Int) = widthDp <= COMPACT_MAX_WIDTH_DP
+    fun useMobileCatalog(widthDp: Int) = isCompact(widthDp)
     fun isPhone(smallestWidthDp: Int) = smallestWidthDp <= COMPACT_MAX_WIDTH_DP
     fun gridColumns(widthDp: Int) = if (isCompact(widthDp)) PHONE_GRID_COLUMNS else TV_GRID_COLUMNS
     fun searchColumns(widthDp: Int) = if (isCompact(widthDp)) PHONE_SEARCH_COLUMNS else TV_SEARCH_COLUMNS

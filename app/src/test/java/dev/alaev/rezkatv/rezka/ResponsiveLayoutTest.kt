@@ -34,6 +34,34 @@ class ResponsiveLayoutTest {
     }
 
     @Test
+    fun usesTouchCatalogOnCompactScreens() {
+        val actual = ResponsiveLayout.useMobileCatalog(360)
+        val expected = true
+        assertThat("compact screen uses touch grid", actual, `is`(expected))
+    }
+
+    @Test
+    fun preservesTvCatalogOnWideScreens() {
+        val actual = ResponsiveLayout.useMobileCatalog(1280)
+        val expected = false
+        assertThat("TV screen keeps Leanback grid", actual, `is`(expected))
+    }
+
+    @Test
+    fun keepsPhoneRowsInsideTouchMode() {
+        val actual = ResponsiveLayout.useMobileCatalog(400)
+        val expected = true
+        assertThat("compact screen has touch shelves", actual, `is`(expected))
+    }
+
+    @Test
+    fun keepsTvRowsOnLeanback() {
+        val actual = ResponsiveLayout.useMobileCatalog(800)
+        val expected = false
+        assertThat("wide screen keeps D-pad shelves", actual, `is`(expected))
+    }
+
+    @Test
     fun usesTwoGridColumnsOnPhone() {
         val actual = ResponsiveLayout.gridColumns(360)
         val expected = 2

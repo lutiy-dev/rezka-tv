@@ -7,16 +7,25 @@ import org.junit.jupiter.api.Test
 class StreamSourceTest {
     @Test
     fun recognizesHlsWithQueryParameters() {
-        assertThat("HLS query is ignored", StreamSource.isHls("https://cdn.test/stream.m3u8?token=abc"), `is`(true))
+        val url = "https://cdn.test/stream.m3u8?token=abc"
+        val actual = StreamSource.isHls(url)
+        val expected = true
+        assertThat("HLS query is ignored", actual, `is`(expected))
     }
 
     @Test
     fun recognizesHlsWithFragmentAndUppercaseExtension() {
-        assertThat("HLS fragment is ignored", StreamSource.isHls("https://cdn.test/stream.M3U8#start"), `is`(true))
+        val url = "https://cdn.test/stream.M3U8#start"
+        val actual = StreamSource.isHls(url)
+        val expected = true
+        assertThat("HLS fragment is ignored", actual, `is`(expected))
     }
 
     @Test
     fun leavesMp4AsNonHls() {
-        assertThat("MP4 is not HLS", StreamSource.isHls("https://cdn.test/stream.mp4?token=abc"), `is`(false))
+        val url = "https://cdn.test/stream.mp4?token=abc"
+        val actual = StreamSource.isHls(url)
+        val expected = false
+        assertThat("MP4 is not HLS", actual, `is`(expected))
     }
 }

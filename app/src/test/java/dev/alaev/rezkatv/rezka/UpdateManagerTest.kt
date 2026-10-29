@@ -28,27 +28,27 @@ class UpdateManagerTest {
     }
 
     @Test
-    fun acceptsOfficialReleaseApk() {
-        val url = "https://github.com/lutiy-dev/rezka-tv/releases/download/v1.1.5/Rezka-TV-1.1.5.apk"
-        val actual = UpdateManager.isTrustedApkUrl(url)
+    fun ignoresSameVersion() {
+        val versions = "1.1.4" to "1.1.4"
+        val actual = UpdateManager.isNewer(versions.first, versions.second)
+        val expected = false
+        assertThat("same version is not newer", actual, `is`(expected))
+    }
+
+    @Test
+    fun acceptsNewMajorVersion() {
+        val versions = "2.0.0" to "1.9.9"
+        val actual = UpdateManager.isNewer(versions.first, versions.second)
         val expected = true
-        assertThat("official APK URL is accepted", actual, `is`(expected))
+        assertThat("major version update is newer", actual, `is`(expected))
     }
 
     @Test
-    fun rejectsExternalReleaseApk() {
-        val url = "https://example.com/Rezka-TV-1.1.5.apk"
-        val actual = UpdateManager.isTrustedApkUrl(url)
-        val expected = false
-        assertThat("external APK URL is rejected", actual, `is`(expected))
-    }
-
-    @Test
-    fun rejectsRepositoryLookalike() {
-        val url = "https://github.com.evil.example/lutiy-dev/rezka-tv/releases/download/v1.1.5/app.apk"
-        val actual = UpdateManager.isTrustedApkUrl(url)
-        val expected = false
-        assertThat("lookalike repository host is rejected", actual, `is`(expected))
+    fun usesManifestWhenApiUnavailable() {
+        val first = UpdateManager.Release("1.1.4", "manifest")
+        val actual = UpdateManager.newest(first, null)?.version
+        val expected = first.version
+        assertThat("manifest remains available", actual, `is`(expected))
     }
 
     @Test

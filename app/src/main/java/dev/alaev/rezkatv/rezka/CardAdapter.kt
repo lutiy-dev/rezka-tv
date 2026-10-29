@@ -45,6 +45,10 @@ class CardAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_card, parent, false)
         view.clipToOutline = true
+        if (ResponsiveLayout.isCompact(parent.resources.configuration.screenWidthDp)) {
+            view.isFocusable = false
+            view.isFocusableInTouchMode = false
+        }
         view.setOnFocusChangeListener { v, focused ->
             val scale = if (focused) FOCUS_SCALE else 1f
             v.animate().scaleX(scale).scaleY(scale).setDuration(120).start()

@@ -1,0 +1,1 @@
+Rezka TV 1.1.8 DIAGNOSTIC BETA: temporary phone shareable, in-memory Media3 playback stage and error log for diagnosing streams that stall. No change to streaming, parser, quality selection or source URLs. Phone catalog spacing and details layout remain known limitations. NOT PRODUCTION; device playback not yet verified.

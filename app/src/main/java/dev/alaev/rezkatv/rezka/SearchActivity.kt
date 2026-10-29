@@ -68,7 +68,7 @@ class SearchActivity : Activity() {
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
                 override fun afterTextChanged(s: Editable?) {
                     query.clear()
-                    query.append(s.orEmpty())
+                    query.append(s?.toString().orEmpty())
                     onQueryChanged()
                 }
             })

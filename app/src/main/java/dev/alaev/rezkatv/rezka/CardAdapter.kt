@@ -46,7 +46,7 @@ class CardAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_card, parent, false)
         view.clipToOutline = true
-        if (catalogMode) {
+        if (catalogMode && ResponsiveLayout.isCompact(parent.resources.configuration.screenWidthDp)) {
             val widthDp = parent.resources.configuration.screenWidthDp
             val columns = ResponsiveLayout.mobileCatalogColumns(widthDp)
             val gapDp = CATALOG_GAP_DP

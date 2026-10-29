@@ -1,16 +1,21 @@
 package dev.alaev.rezkatv.rezka
 
 import android.app.Activity
+import android.content.res.Configuration
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
+import android.view.WindowManager
+import android.widget.EditText
 import android.widget.TextView
 import androidx.leanback.widget.VerticalGridView
+import dev.alaev.rezkatv.R
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import dev.alaev.rezkatv.R
 
 class SearchActivity : Activity() {
 
@@ -21,6 +26,7 @@ class SearchActivity : Activity() {
     }
 
     private val scope = MainScope()
+    private val phoneMode by lazy { ResponsiveLayout.isPhone(resources.configuration.smallestScreenWidthDp) }
     private val query = StringBuilder()
     private var layout = Layout.RU
     private var searchJob: Job? = null
@@ -34,14 +40,16 @@ class SearchActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_search)
+        setContentView(if (phoneMode) R.layout.activity_search_mobile else R.layout.activity_search)
         client = RezkaClient.get(this)
         queryView = findViewById(R.id.query)
         emptyView = findViewById(R.id.empty)
         loader = Loader(this, null)
-        keyboard = findViewById(R.id.keyboard)
-        keyboard.setNumColumns(KEY_COLUMNS)
-        keyboard.itemAnimator = null
+        if (!phoneMode) {
+            keyboard = findViewById(R.id.keyboard)
+            keyboard.setNumColumns(KEY_COLUMNS)
+            keyboard.itemAnimator = null
+        }
 
         results = CardAdapter(onClick = { openDetails(it) })
         findViewById<VerticalGridView>(R.id.results).apply {
@@ -53,12 +61,40 @@ class SearchActivity : Activity() {
             adapter = results
         }
 
-        showKeyboard()
-        keyboard.requestFocus()
-        intent.getStringExtra(EXTRA_QUERY)?.let {
-            query.append(it.lowercase())
-            onQueryChanged()
+        if (phoneMode) {
+            val input = queryView as EditText
+            input.addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+                override fun afterTextChanged(s: Editable?) {
+                    query.clear()
+                    query.append(s?.toString().orEmpty())
+                    onQueryChanged()
+                }
+            })
+            input.setText(savedInstanceState?.getString(STATE_QUERY) ?: intent.getStringExtra(EXTRA_QUERY).orEmpty())
+            input.setSelection(input.text.length)
+            input.requestFocus()
+            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+        } else {
+            showKeyboard()
+            keyboard.requestFocus()
+            (savedInstanceState?.getString(STATE_QUERY) ?: intent.getStringExtra(EXTRA_QUERY))?.let {
+                query.append(it.lowercase())
+                onQueryChanged()
+            }
         }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        findViewById<VerticalGridView>(R.id.results)
+            .setNumColumns(ResponsiveLayout.searchColumns(newConfig.screenWidthDp))
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString(STATE_QUERY, query.toString())
+        super.onSaveInstanceState(outState)
     }
 
     override fun onDestroy() {
@@ -92,7 +128,7 @@ class SearchActivity : Activity() {
     }
 
     private fun onQueryChanged() {
-        queryView.text = query.toString()
+        if (!phoneMode) queryView.text = query.toString()
         searchJob?.cancel()
         val text = query.toString().trim()
         if (text.length < MIN_QUERY) {
@@ -101,7 +137,7 @@ class SearchActivity : Activity() {
             return
         }
         searchJob = scope.launch {
-            delay(TYPING_PAUSE_MS)
+            delay(if (phoneMode) MOBILE_TYPING_PAUSE_MS else TYPING_PAUSE_MS)
             emptyView.visibility = View.GONE
             val page = loader.load { client.page(client.searchUrl(text)) }
             if (page == null) {
@@ -127,5 +163,7 @@ class SearchActivity : Activity() {
         private const val KEY_COLUMNS = 6
         private const val MIN_QUERY = 2
         private const val TYPING_PAUSE_MS = 600L
+        private const val MOBILE_TYPING_PAUSE_MS = 400L
+        private const val STATE_QUERY = "query_state"
     }
 }

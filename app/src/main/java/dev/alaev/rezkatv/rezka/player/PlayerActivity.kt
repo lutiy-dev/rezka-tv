@@ -498,7 +498,6 @@ class PlayerActivity : FragmentActivity() {
             val causeName = error.cause?.javaClass?.simpleName ?: "unknown"
             recordDiagnostic("player error=${error.errorCodeName} cause=$causeName")
             recoverSource()
-
         }
 
         override fun onCues(cueGroup: CueGroup) = subtitlesView.setCues(cueGroup.cues)
@@ -797,6 +796,17 @@ class PlayerActivity : FragmentActivity() {
 
     private fun onTick() {
         val now = SystemClock.elapsedRealtime()
+        checkStalledBuffer(now)
+        if (player.isPlaying) {
+            val now = SystemClock.elapsedRealtime()
+            if (now - lastLocalSave >= LOCAL_SAVE_MS) saveProgress(toServer = false)
+            val firstSave = !serverSaved && player.currentPosition >= FIRST_SAVE_AFTER_MS
+            if (firstSave || (serverSaved && now - lastServerSave >= SERVER_SAVE_MS)) saveProgress(toServer = true)
+        }
+        updateNextUp()
+    }
+
+    private fun checkStalledBuffer(now: Long) {
         val waitingTooLong = bufferingSinceMs > 0 && now - bufferingSinceMs >= BUFFERING_REPORT_MS
         val reportDue = lastBufferingReportMs == 0L || now - lastBufferingReportMs >= BUFFERING_REPORT_MS
         if (waitingTooLong && reportDue) {
@@ -810,13 +820,6 @@ class PlayerActivity : FragmentActivity() {
             bufferingSinceMs = 0L
             recoverSource()
         }
-        if (player.isPlaying) {
-            val now = SystemClock.elapsedRealtime()
-            if (now - lastLocalSave >= LOCAL_SAVE_MS) saveProgress(toServer = false)
-            val firstSave = !serverSaved && player.currentPosition >= FIRST_SAVE_AFTER_MS
-            if (firstSave || (serverSaved && now - lastServerSave >= SERVER_SAVE_MS)) saveProgress(toServer = true)
-        }
-        updateNextUp()
     }
 
     private fun updateNextUp() {

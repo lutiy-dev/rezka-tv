@@ -61,18 +61,26 @@ class BrowseActivity : Activity() {
         oscar = OscarPage(this, client, scope, marks)
         rail = NavRail(findViewById(R.id.rail), findViewById(R.id.rail_scrim), ::onSection) { ListsAssets.preload(this) }
 
-        if (phoneMode) {
-            findViewById<View>(R.id.rail).visibility = View.GONE
-            findViewById<View>(R.id.rail_scrim).visibility = View.GONE
-            val content = findViewById<View>(R.id.content)
-            val params = content.layoutParams as android.widget.FrameLayout.LayoutParams
-            params.leftMargin = 0
-            params.bottomMargin = (64 * resources.displayMetrics.density).toInt()
-            content.layoutParams = params
-            mobileNavigation = MobileNavigation(findViewById(R.id.mobile_nav), ::onSection)
-        }
+        if (phoneMode) configureMobileNavigation() else configureTvNavigation()
 
-        if (!phoneMode) root.onFocusSearchListener = BrowseFrameLayout.OnFocusSearchListener { focused, direction ->
+        home.load()
+        UpdateManager.check(this)
+    }
+
+    private fun configureMobileNavigation() {
+        findViewById<View>(R.id.rail).visibility = View.GONE
+        findViewById<View>(R.id.rail_scrim).visibility = View.GONE
+        val content = findViewById<View>(R.id.content)
+        val params = content.layoutParams as android.widget.FrameLayout.LayoutParams
+        params.leftMargin = 0
+        params.bottomMargin = (MOBILE_BAR_DP * resources.displayMetrics.density).toInt()
+        content.layoutParams = params
+        mobileNavigation = MobileNavigation(findViewById(R.id.mobile_nav), ::onSection)
+    }
+    }
+
+    private fun configureTvNavigation() {
+        root.onFocusSearchListener = BrowseFrameLayout.OnFocusSearchListener { focused, direction ->
             when {
                 choice.isShowing && (direction == View.FOCUS_LEFT || direction == View.FOCUS_RIGHT) -> focused
                 direction == View.FOCUS_LEFT && !rail.contains(focused) -> {
@@ -87,8 +95,6 @@ class BrowseActivity : Activity() {
             }
         }
 
-        home.load()
-        UpdateManager.check(this)
     }
 
     override fun onRestart() {
@@ -116,6 +122,22 @@ class BrowseActivity : Activity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
+        if (phoneMode) onPhoneBack() else onTvBack()
+    }
+
+    private fun onPhoneBack() {
+        when {
+            choice.isShowing -> choice.hide()
+            home.isVisible && home.onBack() -> Unit
+            grid.isVisible && grid.onBack() -> Unit
+            top.isVisible && top.onBack() -> Unit
+            oscar.isVisible && oscar.onBack() -> Unit
+            rail.selected != Section.HOME -> onSection(Section.HOME)
+            else -> finish()
+        }
+    }
+
+    private fun onTvBack() {
         when {
             choice.isShowing -> choice.hide()
             rail.contains(currentFocus) -> if (rail.selected != Section.HOME) onSection(Section.HOME) else finish()
@@ -123,8 +145,6 @@ class BrowseActivity : Activity() {
             grid.isVisible && grid.onBack() -> Unit
             top.isVisible && top.onBack() -> Unit
             oscar.isVisible && oscar.onBack() -> Unit
-            phoneMode && rail.selected != Section.HOME -> onSection(Section.HOME)
-            phoneMode -> finish()
             else -> rail.focus()
         }
     }
@@ -162,5 +182,6 @@ class BrowseActivity : Activity() {
 
     private companion object {
         const val EXTRA_BASE = "base"
+        const val MOBILE_BAR_DP = 64
     }
 }

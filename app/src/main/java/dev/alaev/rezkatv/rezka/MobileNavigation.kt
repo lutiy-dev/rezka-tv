@@ -8,10 +8,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import dev.alaev.rezkatv.R
 
-class MobileNavigation(
-    private val bar: LinearLayout,
-    private val onSelect: (Section) -> Unit,
-) {
+class MobileNavigation(private val bar: LinearLayout, private val onSelect: (Section) -> Unit) {
     private val primary = listOf(Section.HOME, Section.FILMS, Section.SERIES, Section.SEARCH)
     private val secondary = Section.entries.filterNot { it in primary }
     private val buttons = mutableMapOf<Section, TextView>()

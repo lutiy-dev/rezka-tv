@@ -114,6 +114,10 @@
     <string name="pref_check_updates_summary">Проверить новую версию Rezka TV на GitHub</string>
     <string name="pref_version">Версия</string>
 
+    <string name="login_email">Email или логин</string>
+    <string name="login_password">Пароль</string>
+    <string name="login_submit">Войти</string>
+    <string name="login_fields_required">Введите email и пароль</string>
     <string name="login_title">Вход в rezka</string>
     <string name="login_instructions">Наведите камеру телефона на код и введите email и пароль на телефоне. Телефон должен быть в той же Wi-Fi сети, что и телевизор.</string>
     <string name="login_or_open">Или откройте в браузере телефона:</string>

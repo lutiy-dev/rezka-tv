@@ -6,6 +6,10 @@ import android.os.Handler
 import android.os.Looper
 import android.view.View
 import android.widget.ImageView
+import android.widget.EditText
+import android.widget.Button
+import android.widget.Toast
+import java.io.IOException
 import android.widget.TextView
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -35,12 +39,14 @@ class LoginActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
+        val phone = resources.configuration.smallestScreenWidthDp < 600
+        setContentView(if (phone) R.layout.activity_login_phone else R.layout.activity_login)
         client = RezkaClient.get(this)
         qr = findViewById(R.id.qr)
         qrCard = findViewById(R.id.qr_card)
         url = findViewById(R.id.login_url)
         status = findViewById(R.id.login_status)
+        findViewById<Button>(R.id.login_submit).setOnClickListener { submitCredentials() }
         findViewById<View>(R.id.login_on_tv).setOnClickListener {
             siteOpened = true
             openSite()
@@ -59,6 +65,36 @@ class LoginActivity : Activity() {
         handler.removeCallbacksAndMessages(null)
         scope.cancel()
         super.onDestroy()
+    }
+
+    private fun submitCredentials() {
+        val email = findViewById<EditText>(R.id.login_email).text.toString().trim()
+        val password = findViewById<EditText>(R.id.login_password).text.toString()
+        if (email.isEmpty() || password.isEmpty()) {
+            showStatus(R.string.login_fields_required, error = true)
+            return
+        }
+        val submit = findViewById<Button>(R.id.login_submit)
+        submit.isEnabled = false
+        showStatus(R.string.login_status_checking)
+        scope.launch {
+            val result = withContext(RezkaClient.io) {
+                try {
+                    client.login(email, password)
+                } catch (e: IOException) {
+                    LoginResult(false, getString(R.string.load_failed))
+                }
+            }
+            submit.isEnabled = true
+            if (result.success) {
+                showStatus(R.string.login_status_done)
+                client.exportCookiesToWebView()
+                setResult(RESULT_OK)
+                handler.postDelayed({ finish() }, DONE_DELAY_MS)
+            } else {
+                showStatus(result.message, error = true)
+            }
+        }
     }
 
     private fun startCode() {

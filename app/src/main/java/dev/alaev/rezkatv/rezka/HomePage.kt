@@ -5,8 +5,8 @@ import android.graphics.Rect
 import android.os.Process
 import android.os.SystemClock
 import android.util.Log
-import android.view.MotionEvent
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -15,12 +15,12 @@ import androidx.leanback.widget.HorizontalGridView
 import androidx.leanback.widget.OnChildViewHolderSelectedListener
 import androidx.leanback.widget.VerticalGridView
 import androidx.recyclerview.widget.RecyclerView
+import dev.alaev.rezkatv.R
 import kotlin.math.abs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import dev.alaev.rezkatv.R
 
 class HomePage(
     private val activity: Activity,
@@ -212,21 +212,18 @@ class HomePage(
                     private var downX = 0f
                     private var downY = 0f
                     override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
-                        when (e.actionMasked) {
-                            MotionEvent.ACTION_DOWN -> {
-                                downX = e.x
-                                downY = e.y
-                                rv.parent?.requestDisallowInterceptTouchEvent(false)
+                        if (e.actionMasked == MotionEvent.ACTION_DOWN) {
+                            downX = e.x
+                            downY = e.y
+                            rv.parent?.requestDisallowInterceptTouchEvent(false)
+                        } else if (e.actionMasked == MotionEvent.ACTION_MOVE) {
+                            val dx = abs(e.x - downX)
+                            val dy = abs(e.y - downY)
+                            if (dx > TOUCH_DIRECTION_THRESHOLD_PX || dy > TOUCH_DIRECTION_THRESHOLD_PX) {
+                                rv.parent?.requestDisallowInterceptTouchEvent(dx > dy)
                             }
-                            MotionEvent.ACTION_MOVE -> {
-                                val dx = abs(e.x - downX)
-                                val dy = abs(e.y - downY)
-                                if (dx > 12 || dy > 12) {
-                                    rv.parent?.requestDisallowInterceptTouchEvent(dx > dy)
-                                }
-                            }
-                            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL ->
-                                rv.parent?.requestDisallowInterceptTouchEvent(false)
+                        } else if (e.actionMasked == MotionEvent.ACTION_UP || e.actionMasked == MotionEvent.ACTION_CANCEL) {
+                            rv.parent?.requestDisallowInterceptTouchEvent(false)
                         }
                         return false
                     }
@@ -265,6 +262,7 @@ class HomePage(
         const val HERO_ART_DELAY_MS = 150L
         const val HERO_DETAILS_DELAY_MS = 550L
         const val CLIP_FAR = 100_000
+        const val TOUCH_DIRECTION_THRESHOLD_PX = 12f
         const val TAG = "RezkaTv"
     }
 }

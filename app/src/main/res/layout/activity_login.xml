@@ -19,6 +19,26 @@
             style="@style/HeroTitle"
             android:text="@string/login_title" />
 
+        <EditText
+            android:id="@+id/login_email"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:hint="@string/login_email"
+            android:inputType="textEmailAddress"
+            android:singleLine="true" />
+        <EditText
+            android:id="@+id/login_password"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:hint="@string/login_password"
+            android:inputType="textPassword"
+            android:singleLine="true" />
+        <Button
+            android:id="@+id/login_submit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/login_submit" />
+
         <TextView
             style="@style/Description"
             android:layout_marginTop="14dp"

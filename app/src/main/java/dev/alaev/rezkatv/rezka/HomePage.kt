@@ -5,6 +5,7 @@ import android.graphics.Rect
 import android.os.Process
 import android.os.SystemClock
 import android.util.Log
+import android.view.MotionEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +15,7 @@ import androidx.leanback.widget.HorizontalGridView
 import androidx.leanback.widget.OnChildViewHolderSelectedListener
 import androidx.leanback.widget.VerticalGridView
 import androidx.recyclerview.widget.RecyclerView
+import kotlin.math.abs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -205,6 +207,31 @@ class HomePage(
 
         init {
             cards.setRecycledViewPool(cardPool)
+            if (compact) {
+                cards.addOnItemTouchListener(object : RecyclerView.SimpleOnItemTouchListener() {
+                    private var downX = 0f
+                    private var downY = 0f
+                    override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+                        when (e.actionMasked) {
+                            MotionEvent.ACTION_DOWN -> {
+                                downX = e.x
+                                downY = e.y
+                                rv.parent?.requestDisallowInterceptTouchEvent(false)
+                            }
+                            MotionEvent.ACTION_MOVE -> {
+                                val dx = abs(e.x - downX)
+                                val dy = abs(e.y - downY)
+                                if (dx > 12 || dy > 12) {
+                                    rv.parent?.requestDisallowInterceptTouchEvent(dx > dy)
+                                }
+                            }
+                            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL ->
+                                rv.parent?.requestDisallowInterceptTouchEvent(false)
+                        }
+                        return false
+                    }
+                })
+            }
             cards.pinFocusToStart(cards.paddingStart)
             val overflow = activity.resources.getDimensionPixelSize(R.dimen.card_focus_overflow)
             cards.clipBounds = Rect(cards.paddingStart - overflow, -CLIP_FAR, CLIP_FAR, CLIP_FAR)

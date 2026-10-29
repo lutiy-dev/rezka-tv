@@ -104,7 +104,6 @@ class BrowseActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
-        UpdateManager.resumePendingInstall(this)
         if (settings.liteMode != liteMode || RezkaClient.baseUrl(this) != baseUrl) recreate()
     }
 

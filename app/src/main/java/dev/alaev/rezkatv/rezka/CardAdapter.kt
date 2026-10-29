@@ -14,6 +14,7 @@ class CardAdapter(
     private val onLongClick: ((Card) -> Unit)? = null,
     private val progressOf: (Card) -> Int? = { null },
     private val onClick: (Card) -> Unit,
+    private val catalogMode: Boolean = false,
 ) : RecyclerView.Adapter<CardAdapter.Holder>() {
 
     private val cards = mutableListOf<Card>()
@@ -45,6 +46,15 @@ class CardAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_card, parent, false)
         view.clipToOutline = true
+        if (catalogMode && ResponsiveLayout.isCompact(parent.resources.configuration.screenWidthDp)) {
+            val widthDp = parent.resources.configuration.screenWidthDp
+            val columns = ResponsiveLayout.mobileCatalogColumns(widthDp)
+            val gapDp = CATALOG_GAP_DP
+            val itemWidthDp = (widthDp - CATALOG_PADDING_DP * 2 - gapDp * (columns - 1)) / columns
+            val density = parent.resources.displayMetrics.density
+            val width = (itemWidthDp * density).toInt()
+            view.layoutParams = RecyclerView.LayoutParams(width, width * POSTER_HEIGHT_RATIO / POSTER_WIDTH_RATIO)
+        }
         if (ResponsiveLayout.isCompact(parent.resources.configuration.screenWidthDp)) {
             view.isFocusable = false
             view.isFocusableInTouchMode = false
@@ -77,5 +87,9 @@ class CardAdapter(
     private companion object {
         const val FOCUS_SCALE = 1.08f
         const val PRELOAD_AHEAD = 8
+        const val CATALOG_GAP_DP = 8
+        const val CATALOG_PADDING_DP = 12
+        const val POSTER_HEIGHT_RATIO = 3
+        const val POSTER_WIDTH_RATIO = 2
     }
 }

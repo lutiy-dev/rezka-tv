@@ -49,12 +49,16 @@ class ResponsiveLayoutTest {
 
     @Test
     fun keepsPhoneRowsInsideTouchMode() {
-        assertThat("compact screen has touch shelves", ResponsiveLayout.useMobileCatalog(400), `is`(true))
+        val actual = ResponsiveLayout.useMobileCatalog(400)
+        val expected = true
+        assertThat("compact screen has touch shelves", actual, `is`(expected))
     }
 
     @Test
     fun keepsTvRowsOnLeanback() {
-        assertThat("wide screen keeps D-pad shelves", ResponsiveLayout.useMobileCatalog(800), `is`(false))
+        val actual = ResponsiveLayout.useMobileCatalog(800)
+        val expected = false
+        assertThat("wide screen keeps D-pad shelves", actual, `is`(expected))
     }
 
     @Test

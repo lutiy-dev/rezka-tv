@@ -26,8 +26,9 @@ class GridPage(
     private val grid: VerticalGridView = activity.findViewById(R.id.grid)
     private val mobileGrid: RecyclerView = activity.findViewById(R.id.mobile_grid)
     private val phoneMode = ResponsiveLayout.useMobileCatalog(activity.resources.configuration.screenWidthDp)
-    private val adapter = CardAdapter(onFocus = ::showInfo, onClick = { activity.openDetails(it) })
+    private val adapter = CardAdapter(onFocus = ::showInfo, onClick = { activity.openDetails(it) }, catalogMode = true)
     private val columns = ResponsiveLayout.gridColumns(activity.resources.configuration.screenWidthDp)
+    private val mobileColumns = ResponsiveLayout.mobileCatalogColumns(activity.resources.configuration.screenWidthDp)
 
     private var category: Category? = null
     private var sort = Sort.POPULAR
@@ -41,7 +42,7 @@ class GridPage(
         if (phoneMode) {
             grid.visibility = View.GONE
             mobileGrid.visibility = View.VISIBLE
-            mobileGrid.layoutManager = GridLayoutManager(activity, columns)
+            mobileGrid.layoutManager = GridLayoutManager(activity, mobileColumns)
             mobileGrid.adapter = adapter
         }
         grid.setNumColumns(columns)

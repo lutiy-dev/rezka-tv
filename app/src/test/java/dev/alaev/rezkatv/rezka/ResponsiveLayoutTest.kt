@@ -62,6 +62,20 @@ class ResponsiveLayoutTest {
     }
 
     @Test
+    fun usesThreeCatalogColumnsOnNormalPhone() {
+        val actual = ResponsiveLayout.mobileCatalogColumns(392)
+        val expected = 3
+        assertThat("normal width uses three posters", actual, `is`(expected))
+    }
+
+    @Test
+    fun usesTwoCatalogColumnsOnNarrowPhone() {
+        val actual = ResponsiveLayout.mobileCatalogColumns(320)
+        val expected = 2
+        assertThat("narrow phone leaves readable posters", actual, `is`(expected))
+    }
+
+    @Test
     fun usesTwoGridColumnsOnPhone() {
         val actual = ResponsiveLayout.gridColumns(360)
         val expected = 2

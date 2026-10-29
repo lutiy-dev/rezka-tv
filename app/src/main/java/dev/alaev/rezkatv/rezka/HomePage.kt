@@ -16,11 +16,11 @@ import androidx.leanback.widget.OnChildViewHolderSelectedListener
 import androidx.leanback.widget.VerticalGridView
 import androidx.recyclerview.widget.RecyclerView
 import dev.alaev.rezkatv.R
-import kotlin.math.abs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 class HomePage(
     private val activity: Activity,
@@ -222,7 +222,9 @@ class HomePage(
                             if (dx > TOUCH_DIRECTION_THRESHOLD_PX || dy > TOUCH_DIRECTION_THRESHOLD_PX) {
                                 rv.parent?.requestDisallowInterceptTouchEvent(dx > dy)
                             }
-                        } else if (e.actionMasked == MotionEvent.ACTION_UP || e.actionMasked == MotionEvent.ACTION_CANCEL) {
+                        } else if (e.actionMasked == MotionEvent.ACTION_UP ||
+                            e.actionMasked == MotionEvent.ACTION_CANCEL
+                        ) {
                             rv.parent?.requestDisallowInterceptTouchEvent(false)
                         }
                         return false

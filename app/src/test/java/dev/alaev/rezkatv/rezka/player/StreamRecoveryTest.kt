@@ -1,0 +1,34 @@
+package dev.alaev.rezkatv.rezka.player
+
+import dev.alaev.rezkatv.rezka.Quality
+import org.hamcrest.MatcherAssert.assertThat
+import org.hamcrest.Matchers.`is`
+import org.junit.jupiter.api.Test
+
+class StreamRecoveryTest {
+    private val low = Quality("480p", listOf("low-a"))
+    private val high = Quality("1080p", listOf("high-a", "high-b"))
+
+    @Test
+    fun triesNextMirrorBeforeChangingQuality() {
+        val actual = StreamRecovery.next(listOf(low, high), high, setOf("1080p" to 0))
+        val expected = StreamChoice(high, 1)
+        assertThat("mirror fallback", actual, `is`(expected))
+    }
+
+    @Test
+    fun choosesLowerQualityAfterExhaustingMirrors() {
+        val tried = setOf("1080p" to 0, "1080p" to 1)
+        val actual = StreamRecovery.next(listOf(low, high), high, tried)
+        val expected = StreamChoice(low, 0)
+        assertThat("quality fallback", actual, `is`(expected))
+    }
+
+    @Test
+    fun stopsWhenEverySourceWasAttempted() {
+        val tried = setOf("1080p" to 0, "1080p" to 1, "480p" to 0)
+        val actual = StreamRecovery.next(listOf(low, high), low, tried)
+        val expected: StreamChoice? = null
+        assertThat("no infinite retry", actual, `is`(expected))
+    }
+}

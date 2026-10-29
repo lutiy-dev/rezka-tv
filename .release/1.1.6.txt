@@ -1,0 +1,1 @@
+Rezka TV 1.1.6 BETA: phone gesture regression fix, original 1.1.4 updater restored; playback on devices NOT CONFIRMED.

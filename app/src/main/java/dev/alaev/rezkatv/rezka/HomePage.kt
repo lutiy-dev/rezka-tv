@@ -44,7 +44,7 @@ class HomePage(
     private val heroExtra: TextView = activity.findViewById(R.id.hero_extra)
     private val heroDescription: TextView = activity.findViewById(R.id.hero_description)
 
-    private val compact = ResponsiveLayout.isCompact(activity.resources.configuration.screenWidthDp)
+    private val compact = ResponsiveLayout.isPhone(activity.resources.configuration.smallestScreenWidthDp)
     private val shelves = Shelf.entries.filter { !lite || it.inLiteMode }
     private val rows = mutableListOf<ShelfRow>()
     private val rowsAdapter = RowsAdapter()
@@ -66,7 +66,7 @@ class HomePage(
         } else {
             rowsView.adapter = rowsAdapter
         }
-        if (ResponsiveLayout.useEdgeAwareRows(activity.resources.configuration.screenWidthDp)) {
+        if (ResponsiveLayout.useEdgeAwareRows(activity.resources.configuration.smallestScreenWidthDp)) {
             rowsView.keepFocusInsideEdges()
         } else {
             rowsView.pinFocusToStart(0)

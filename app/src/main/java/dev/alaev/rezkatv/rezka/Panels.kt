@@ -113,4 +113,3 @@ private fun RecyclerView.selectIndex(index: Int) {
     if (this is VerticalGridView) selectedPosition = index else scrollToPosition(index)
 }
 
-internal fun selectedSeason(seasons: List<Int>, index: Int): Int? = seasons.getOrNull(index)

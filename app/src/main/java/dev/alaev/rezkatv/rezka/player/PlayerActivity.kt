@@ -126,7 +126,6 @@ class PlayerActivity : FragmentActivity() {
     private var refreshedAfterError = false
     private var bufferingSinceMs = 0L
     private var lastBufferingReportMs = 0L
-    private val attemptedSources = mutableSetOf<Pair<String, Int>>()
     private var stopped = false
     private var requestedPosition = RESUME
     private var autoplay = true
@@ -357,7 +356,6 @@ class PlayerActivity : FragmentActivity() {
         val d = details ?: return
         val t = translator ?: return
         preparing = true
-        attemptedSources.clear()
         requestedPosition = positionMs
         episode = target
         serverSaved = false
@@ -391,7 +389,6 @@ class PlayerActivity : FragmentActivity() {
         val q = quality ?: return
         val s = streams ?: return
         urlIndex = index
-        attemptedSources.add(q.label to index)
         bufferingSinceMs = SystemClock.elapsedRealtime()
         val url = q.urls[index]
         val item = MediaItem.Builder()
@@ -497,7 +494,16 @@ class PlayerActivity : FragmentActivity() {
             Log.w(TAG, "playback error ${error.errorCodeName}", error)
             val causeName = error.cause?.javaClass?.simpleName ?: "unknown"
             recordDiagnostic("player error=${error.errorCodeName} cause=$causeName")
-            recoverSource()
+            val q = quality
+            val position = player.currentPosition.coerceAtLeast(0)
+            when {
+                q != null && urlIndex + 1 < q.urls.size -> prepare(position, urlIndex + 1)
+                !refreshedAfterError -> {
+                    refreshedAfterError = true
+                    start(episode, position)
+                }
+                else -> showError()
+            }
         }
 
         override fun onCues(cueGroup: CueGroup) = subtitlesView.setCues(cueGroup.cues)
@@ -507,25 +513,6 @@ class PlayerActivity : FragmentActivity() {
             if (wanted.language != null) return
             val selected = tracks.groups.any { it.type == C.TRACK_TYPE_TEXT && it.isSelected && it.mediaTrackGroup.getFormat(0).label == wanted.label }
             if (!selected) applySubtitles()
-        }
-    }
-
-    private fun recoverSource() {
-        val position = player.currentPosition.coerceAtLeast(0)
-        val next = StreamRecovery.next(streams?.qualities.orEmpty(), quality, attemptedSources)
-            .takeIf { attemptedSources.size < MAX_SOURCE_ATTEMPTS }
-        when {
-            next != null -> {
-                quality = next.quality
-                prepare(position, next.mirrorIndex)
-            }
-
-            !refreshedAfterError -> {
-                refreshedAfterError = true
-                start(episode, position)
-            }
-
-            else -> showError()
         }
     }
 
@@ -813,13 +800,6 @@ class PlayerActivity : FragmentActivity() {
             recordDiagnostic("buffering wait=${now - bufferingSinceMs}ms buffered=${player.bufferedPosition}ms")
             lastBufferingReportMs = now
         }
-        val stalled = waitingTooLong && now - bufferingSinceMs >= STALL_TIMEOUT_MS
-        val noBufferedData = player.bufferedPosition <= player.currentPosition
-        if (stalled && player.playWhenReady && noBufferedData) {
-            recordDiagnostic("buffering timeout, trying another source")
-            bufferingSinceMs = 0L
-            recoverSource()
-        }
     }
 
     private fun updateNextUp() {
@@ -1015,8 +995,6 @@ class PlayerActivity : FragmentActivity() {
         private const val NEXT_UP_COUNTDOWN_MS = 10_000L
         private const val HTTP_TIMEOUT_MS = 15_000
         private const val BUFFERING_REPORT_MS = 10_000L
-        private const val STALL_TIMEOUT_MS = 30_000L
-        private const val MAX_SOURCE_ATTEMPTS = 6
         private const val BUFFER_BYTES = 48 * 1024 * 1024
         private const val SUBTITLES_ABOVE_CONTROLS = 0.34f
         private const val SUBTITLES_BOTTOM = 0.1f

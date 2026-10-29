@@ -1,0 +1,1 @@
+Rezka TV 1.1.9 MOBILE LAYOUT BETA: denser adaptive phone catalogs (3 columns at >=360dp, 2 narrower), portrait details screen and touch panels for series, seasons and translators. Phone runtime and landscape rotation NOT CONFIRMED; playback streams remain unchanged and known intermittent buffering is unresolved. TV runtime NOT CONFIRMED; no production claim.

@@ -3,18 +3,21 @@ package dev.alaev.rezkatv.rezka
 import android.view.View
 import android.widget.TextView
 import androidx.leanback.widget.VerticalGridView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import dev.alaev.rezkatv.R
 
 class ChoicePanel(private val root: View) {
 
     private val title: TextView = root.findViewById(R.id.choice_title)
-    private val list: VerticalGridView = root.findViewById(R.id.choice_list)
+    private val list: RecyclerView = root.findViewById(R.id.choice_list)
     private var restoreFocus: View? = null
 
     val isShowing get() = root.visibility == View.VISIBLE
 
     init {
         list.itemAnimator = null
+        if (list !is VerticalGridView) list.layoutManager = LinearLayoutManager(root.context)
     }
 
     fun show(titleText: String, items: List<String>, selected: Int, onPick: (Int) -> Unit) {
@@ -24,7 +27,7 @@ class ChoicePanel(private val root: View) {
             hide()
             onPick(i)
         }
-        list.selectedPosition = selected.coerceAtLeast(0)
+        list.selectIndex(selected.coerceAtLeast(0))
         root.visibility = View.VISIBLE
         list.requestFocus()
     }
@@ -40,8 +43,8 @@ class ChoicePanel(private val root: View) {
 class EpisodesPanel(private val root: View) {
 
     private val title: TextView = root.findViewById(R.id.episodes_title)
-    private val seasonList: VerticalGridView = root.findViewById(R.id.season_list)
-    private val episodeList: VerticalGridView = root.findViewById(R.id.episode_list)
+    private val seasonList: RecyclerView = root.findViewById(R.id.season_list)
+    private val episodeList: RecyclerView = root.findViewById(R.id.episode_list)
     private var restoreFocus: View? = null
 
     val isShowing get() = root.visibility == View.VISIBLE
@@ -49,6 +52,10 @@ class EpisodesPanel(private val root: View) {
     init {
         seasonList.itemAnimator = null
         episodeList.itemAnimator = null
+        if (seasonList !is VerticalGridView) {
+            seasonList.layoutManager = LinearLayoutManager(root.context, RecyclerView.HORIZONTAL, false)
+        }
+        if (episodeList !is VerticalGridView) episodeList.layoutManager = LinearLayoutManager(root.context)
     }
 
     fun show(
@@ -73,7 +80,7 @@ class EpisodesPanel(private val root: View) {
                 hide()
                 onPick(inSeason[i])
             }
-            episodeList.selectedPosition = currentIndex.coerceAtLeast(0)
+            episodeList.selectIndex(currentIndex.coerceAtLeast(0))
         }
 
         val startSeason = current?.season?.takeIf { it in seasons } ?: seasons.firstOrNull() ?: return
@@ -81,10 +88,13 @@ class EpisodesPanel(private val root: View) {
         seasonList.adapter = ChipAdapter(
             seasons.map { context.getString(R.string.season_n, it) },
             seasonIndex,
-            onFocus = { i -> showSeason(seasons[i]) },
-            onClick = { episodeList.requestFocus() },
+            onFocus = { i -> selectedSeason(seasons, i)?.let(::showSeason) },
+            onClick = { i ->
+                selectedSeason(seasons, i)?.let(::showSeason)
+                episodeList.requestFocus()
+            },
         )
-        seasonList.selectedPosition = seasonIndex
+        seasonList.selectIndex(seasonIndex)
         showSeason(startSeason)
         seasonList.visibility = if (seasons.size > 1) View.VISIBLE else View.GONE
         root.visibility = View.VISIBLE
@@ -98,3 +108,8 @@ class EpisodesPanel(private val root: View) {
         restoreFocus = null
     }
 }
+
+private fun RecyclerView.selectIndex(index: Int) {
+    if (this is VerticalGridView) selectedPosition = index else scrollToPosition(index)
+}
+

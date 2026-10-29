@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
-      REZKA_VERSION_CODE: '10015'
+      REZKA_VERSION_CODE: '13'
       REZKA_VERSION_NAME: '1.1.5-rc1'
     steps:
       - uses: actions/checkout@v7
@@ -58,7 +58,7 @@ jobs:
           ./gradlew testDebugUnitTest assembleRelease
       - name: Verify candidate version
         run: |
-          aapt dump badging app/build/outputs/apk/release/app-release.apk | grep -F "versionCode='10015'"
+          aapt dump badging app/build/outputs/apk/release/app-release.apk | grep -F "versionCode='13'"
           aapt dump badging app/build/outputs/apk/release/app-release.apk | grep -F "versionName='1.1.5-rc1'"
       - name: Upload candidate APK (not a Release)
         uses: actions/upload-artifact@v7

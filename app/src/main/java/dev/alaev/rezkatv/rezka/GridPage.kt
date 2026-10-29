@@ -70,7 +70,9 @@ class GridPage(
     fun focus() {
         if (adapter.itemCount > 0) {
             if (phoneMode) mobileGrid.requestFocus() else grid.requestFocus()
-        } else chips.getChildAt(0)?.requestFocus()
+        } else {
+            chips.getChildAt(0)?.requestFocus()
+        }
     }
 
     fun onBack(): Boolean {

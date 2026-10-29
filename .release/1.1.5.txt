@@ -1,0 +1,1 @@
+Release 1.1.5 BETA: signed APK, mobile navigation and update improvements. Phone/TV runtime validation pending.

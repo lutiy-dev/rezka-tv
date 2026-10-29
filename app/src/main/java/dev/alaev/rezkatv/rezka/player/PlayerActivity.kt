@@ -784,9 +784,9 @@ class PlayerActivity : FragmentActivity() {
 
     private fun onTick() {
         val now = SystemClock.elapsedRealtime()
-        if (bufferingSinceMs > 0 && now - bufferingSinceMs >= BUFFERING_REPORT_MS &&
-            (lastBufferingReportMs == 0L || now - lastBufferingReportMs >= BUFFERING_REPORT_MS)
-        ) {
+        val waitingTooLong = bufferingSinceMs > 0 && now - bufferingSinceMs >= BUFFERING_REPORT_MS
+        val reportDue = lastBufferingReportMs == 0L || now - lastBufferingReportMs >= BUFFERING_REPORT_MS
+        if (waitingTooLong && reportDue) {
             recordDiagnostic("buffering wait=${now - bufferingSinceMs}ms buffered=${player.bufferedPosition}ms")
             lastBufferingReportMs = now
         }

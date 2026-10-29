@@ -1,21 +1,21 @@
 package dev.alaev.rezkatv.rezka
 
 import android.app.Activity
-import android.os.Bundle
 import android.content.res.Configuration
+import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.View
 import android.view.WindowManager
 import android.widget.EditText
-import android.view.View
 import android.widget.TextView
 import androidx.leanback.widget.VerticalGridView
+import dev.alaev.rezkatv.R
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import dev.alaev.rezkatv.R
 
 class SearchActivity : Activity() {
 

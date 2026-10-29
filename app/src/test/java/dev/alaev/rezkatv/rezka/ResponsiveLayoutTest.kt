@@ -62,6 +62,20 @@ class ResponsiveLayoutTest {
     }
 
     @Test
+    fun usesTwoSearchColumnsOnPortraitPhone() {
+        val actual = ResponsiveLayout.searchColumns(392)
+        val expected = 2
+        assertThat("portrait search grid", actual, `is`(expected))
+    }
+
+    @Test
+    fun usesFourSearchColumnsOnLandscapePhone() {
+        val actual = ResponsiveLayout.searchColumns(800)
+        val expected = 4
+        assertThat("landscape search grid", actual, `is`(expected))
+    }
+
+    @Test
     fun usesThreeCatalogColumnsOnNormalPhone() {
         val actual = ResponsiveLayout.mobileCatalogColumns(392)
         val expected = 3

@@ -6,6 +6,8 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.leanback.widget.VerticalGridView
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -22,6 +24,8 @@ class GridPage(
     private val chips: LinearLayout = activity.findViewById(R.id.sort_chips)
     private val info: TextView = activity.findViewById(R.id.grid_info)
     private val grid: VerticalGridView = activity.findViewById(R.id.grid)
+    private val mobileGrid: RecyclerView = activity.findViewById(R.id.mobile_grid)
+    private val phoneMode = ResponsiveLayout.isCompact(activity.resources.configuration.screenWidthDp)
     private val adapter = CardAdapter(onFocus = ::showInfo, onClick = { activity.openDetails(it) })
     private val columns = ResponsiveLayout.gridColumns(activity.resources.configuration.screenWidthDp)
 
@@ -34,12 +38,18 @@ class GridPage(
     val isVisible get() = page.visibility == View.VISIBLE
 
     init {
+        if (phoneMode) {
+            grid.visibility = View.GONE
+            mobileGrid.visibility = View.VISIBLE
+            mobileGrid.layoutManager = GridLayoutManager(activity, columns)
+            mobileGrid.adapter = adapter
+        }
         grid.setNumColumns(columns)
         grid.pinFocusToStart(grid.paddingTop)
         val spacing = activity.resources.getDimensionPixelSize(R.dimen.card_spacing)
         grid.horizontalSpacing = spacing + spacing / 2
         grid.verticalSpacing = spacing + spacing / 2
-        grid.adapter = adapter
+        if (!phoneMode) grid.adapter = adapter
         adapter.onNearEnd = ::loadMore
     }
 
@@ -58,10 +68,17 @@ class GridPage(
     }
 
     fun focus() {
-        if (adapter.itemCount > 0) grid.requestFocus() else chips.getChildAt(0)?.requestFocus()
+        if (adapter.itemCount > 0) {
+            if (phoneMode) mobileGrid.requestFocus() else grid.requestFocus()
+        } else chips.getChildAt(0)?.requestFocus()
     }
 
     fun onBack(): Boolean {
+        if (phoneMode) {
+            if (mobileGrid.computeVerticalScrollOffset() == 0) return false
+            mobileGrid.smoothScrollToPosition(0)
+            return true
+        }
         if (grid.selectedPosition < columns) return false
         grid.setSelectedPositionSmooth(0)
         return true
@@ -108,7 +125,9 @@ class GridPage(
 
     private fun showPage(p: Page) {
         nextUrl = p.nextUrl
-        if (adapter.replace(p.cards)) grid.selectedPosition = 0
+        if (adapter.replace(p.cards)) {
+            if (phoneMode) mobileGrid.scrollToPosition(0) else grid.selectedPosition = 0
+        }
         if (p.cards.isEmpty()) info.setText(R.string.nothing_here) else if (!grid.hasFocus()) info.text = ""
     }
 

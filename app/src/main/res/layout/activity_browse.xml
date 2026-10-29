@@ -126,6 +126,17 @@
                 android:paddingEnd="@dimen/content_padding"
                 android:paddingBottom="24dp"
                 app:focusOutFront="true" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/mobile_grid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingStart="@dimen/content_padding"
+                android:paddingTop="16dp"
+                android:paddingEnd="@dimen/content_padding"
+                android:paddingBottom="24dp"
+                android:visibility="gone" />
         </LinearLayout>
 
         <include layout="@layout/page_top" />

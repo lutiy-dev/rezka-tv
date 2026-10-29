@@ -137,4 +137,5 @@
     <string name="update_allow_install">Разрешите Rezka TV устанавливать неизвестные приложения, затем нажмите «Обновить» ещё раз</string>
     <string name="update_downloading">Загрузка обновления…</string>
     <string name="update_download_failed">Не удалось скачать обновление</string>
+    <string name="mobile_more">Ещё</string>
 </resources>

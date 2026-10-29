@@ -31,6 +31,8 @@ class BrowseActivity : Activity() {
     private lateinit var choice: ChoicePanel
     private lateinit var root: BrowseFrameLayout
 
+    private val phoneMode by lazy { ResponsiveLayout.isCompact(resources.configuration.screenWidthDp) }
+    private var mobileNavigation: MobileNavigation? = null
     private var liteMode = false
     private var baseUrl = ""
 
@@ -44,7 +46,7 @@ class BrowseActivity : Activity() {
         setContentView(R.layout.activity_browse)
 
         root = findViewById(R.id.root)
-        if (ResponsiveLayout.isCompact(resources.configuration.screenWidthDp)) {
+        if (phoneMode) {
             findViewById<View>(R.id.clock).visibility = View.GONE
             findViewById<View>(R.id.hero_text).visibility = View.GONE
             findViewById<View>(R.id.hero_art_box).visibility = View.GONE
@@ -59,6 +61,24 @@ class BrowseActivity : Activity() {
         oscar = OscarPage(this, client, scope, marks)
         rail = NavRail(findViewById(R.id.rail), findViewById(R.id.rail_scrim), ::onSection) { ListsAssets.preload(this) }
 
+        if (phoneMode) configureMobileNavigation() else configureTvNavigation()
+
+        home.load()
+        UpdateManager.check(this)
+    }
+
+    private fun configureMobileNavigation() {
+        findViewById<View>(R.id.rail).visibility = View.GONE
+        findViewById<View>(R.id.rail_scrim).visibility = View.GONE
+        val content = findViewById<View>(R.id.content)
+        val params = content.layoutParams as android.widget.FrameLayout.LayoutParams
+        params.leftMargin = 0
+        params.bottomMargin = (MOBILE_BAR_DP * resources.displayMetrics.density).toInt()
+        content.layoutParams = params
+        mobileNavigation = MobileNavigation(findViewById(R.id.mobile_nav), ::onSection)
+    }
+
+    private fun configureTvNavigation() {
         root.onFocusSearchListener = BrowseFrameLayout.OnFocusSearchListener { focused, direction ->
             when {
                 choice.isShowing && (direction == View.FOCUS_LEFT || direction == View.FOCUS_RIGHT) -> focused
@@ -73,9 +93,6 @@ class BrowseActivity : Activity() {
                 else -> null
             }
         }
-
-        home.load()
-        UpdateManager.check(this)
     }
 
     override fun onRestart() {
@@ -87,6 +104,7 @@ class BrowseActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
+        UpdateManager.resumePendingInstall(this)
         if (settings.liteMode != liteMode || RezkaClient.baseUrl(this) != baseUrl) recreate()
     }
 
@@ -103,6 +121,22 @@ class BrowseActivity : Activity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
+        if (!phoneMode) {
+            onTvBack()
+            return
+        }
+        when {
+            choice.isShowing -> choice.hide()
+            home.isVisible && home.onBack() -> Unit
+            grid.isVisible && grid.onBack() -> Unit
+            top.isVisible && top.onBack() -> Unit
+            oscar.isVisible && oscar.onBack() -> Unit
+            rail.selected != Section.HOME -> onSection(Section.HOME)
+            else -> finish()
+        }
+    }
+
+    private fun onTvBack() {
         when {
             choice.isShowing -> choice.hide()
             rail.contains(currentFocus) -> if (rail.selected != Section.HOME) onSection(Section.HOME) else finish()
@@ -117,9 +151,12 @@ class BrowseActivity : Activity() {
     private fun onSection(section: Section) {
         when (section) {
             Section.SEARCH -> openSearch()
+
             Section.SETTINGS -> startActivity(Intent(this, SettingsActivity::class.java))
+
             else -> {
                 rail.selected = section
+                mobileNavigation?.update(section)
                 if (section != Section.HOME) home.hide()
                 if (section.category == null) grid.hide()
                 if (section != Section.TOP) top.hide()
@@ -146,5 +183,6 @@ class BrowseActivity : Activity() {
 
     private companion object {
         const val EXTRA_BASE = "base"
+        const val MOBILE_BAR_DP = 64
     }
 }

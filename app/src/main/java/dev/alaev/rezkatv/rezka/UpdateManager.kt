@@ -31,6 +31,15 @@ object UpdateManager {
 
     data class Release(val version: String, val apkUrl: String)
 
+    private var awaitingInstallPermission: Release? = null
+
+    fun resumePendingInstall(activity: Activity) {
+        val release = awaitingInstallPermission ?: return
+        if (!activity.packageManager.canRequestPackageInstalls()) return
+        awaitingInstallPermission = null
+        downloadAndInstall(activity, release)
+    }
+
     fun check(activity: Activity, force: Boolean = false) {
         val prefs = activity.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val now = System.currentTimeMillis()
@@ -66,7 +75,7 @@ object UpdateManager {
         val json = fetchJson(MANIFEST_URL) ?: return null
         val version = json.optString("version")
         val apkUrl = json.optString("apkUrl")
-        return if (version.isBlank() || apkUrl.isBlank()) null else Release(version, apkUrl)
+        return if (version.isBlank() || !isTrustedApkUrl(apkUrl)) null else Release(version, apkUrl)
     }
 
     private fun fetchApiRelease(): Release? {
@@ -95,7 +104,7 @@ object UpdateManager {
                     }
                 }
             }
-            if (tag.isBlank() || apkUrl.isBlank()) null else Release(tag, apkUrl)
+            if (tag.isBlank() || !isTrustedApkUrl(apkUrl)) null else Release(tag, apkUrl)
         } finally {
             connection.disconnect()
         }
@@ -131,6 +140,7 @@ object UpdateManager {
 
     private fun downloadAndInstall(activity: Activity, release: Release) {
         if (!activity.packageManager.canRequestPackageInstalls()) {
+            awaitingInstallPermission = release
             Toast.makeText(activity, R.string.update_allow_install, Toast.LENGTH_LONG).show()
             activity.startActivity(
                 Intent(
@@ -181,6 +191,13 @@ object UpdateManager {
             @Suppress("DEPRECATION", "UnspecifiedRegisterReceiverFlag")
             appContext.registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
         }
+    }
+
+    internal fun isTrustedApkUrl(value: String): Boolean {
+        val uri = runCatching { java.net.URI(value) }.getOrNull() ?: return false
+        return uri.scheme == "https" && uri.host == "github.com" &&
+            uri.path?.startsWith("/lutiy-dev/rezka-tv/releases/download/") == true &&
+            uri.path?.endsWith(".apk") == true && uri.query == null && uri.fragment == null
     }
 
     internal fun newest(first: Release?, second: Release?): Release? = when {

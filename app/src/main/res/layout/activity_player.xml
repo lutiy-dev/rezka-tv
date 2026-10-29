@@ -155,7 +155,7 @@
         android:layout_marginBottom="32dp"
         android:background="@drawable/osd_bg"
         android:padding="12dp"
-        android:text="Отправить диагностический лог"
+        android:text="@string/diagnostics_share"
         android:textColor="@color/text"
         android:textSize="14sp"
         android:visibility="gone" />

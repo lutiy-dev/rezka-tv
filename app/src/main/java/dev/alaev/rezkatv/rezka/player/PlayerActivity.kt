@@ -362,14 +362,15 @@ class PlayerActivity : FragmentActivity() {
         errorView.visibility = View.GONE
         updateTitles()
         showLoading()
-        recordDiagnostic("stream request episode=${target?.code ?: "film"} translator=${t.id.take(24)}")
+        recordDiagnostic("stream request episode=${target?.code ?: "film"}")
 
         startJob?.cancel()
         startJob = scope.launch {
             val s = loader.load { client.streams(d, t, target) } ?: return@launch showError()
             if (s.qualities.isEmpty()) return@launch fallbackToSite()
             streams = s
-            recordDiagnostic("stream response qualities=${s.qualities.size} mirrors=${s.qualities.sumOf { it.urls.size }}")
+            val mirrors = s.qualities.sumOf { it.urls.size }
+            recordDiagnostic("stream response qualities=${s.qualities.size} mirrors=$mirrors")
             quality = QualityPicker.pick(s.qualities, settings.quality, screenHeight())
             subtitle = s.subtitles.find { it.language != null && it.language == s.defaultSubtitle }
             glue?.setSubtitlesAvailable(s.subtitles.isNotEmpty())
@@ -400,7 +401,8 @@ class PlayerActivity : FragmentActivity() {
             })
             .build()
         Log.i(TAG, "play ${episode?.code ?: "film"} ${q.label} #$index")
-        recordDiagnostic("prepare quality=${q.label} mirror=$index type=${if (url.substringBefore('?').endsWith(".m3u8")) "hls" else "other"}")
+        val streamType = if (url.substringBefore('?').endsWith(".m3u8")) "hls" else "other"
+        recordDiagnostic("prepare quality=${q.label} mirror=$index type=$streamType")
         player.setMediaItem(item, positionMs)
         player.prepare()
         player.playWhenReady = !stopped && autoplay
@@ -469,7 +471,9 @@ class PlayerActivity : FragmentActivity() {
                     diagnosticsButton.visibility = View.GONE
                     installSeekProvider()
                 }
+
                 Player.STATE_ENDED -> onEnded()
+
                 else -> Unit
             }
         }
@@ -483,7 +487,8 @@ class PlayerActivity : FragmentActivity() {
 
         override fun onPlayerError(error: PlaybackException) {
             Log.w(TAG, "playback error ${error.errorCodeName}", error)
-            recordDiagnostic("player error=${error.errorCodeName} cause=${error.cause?.javaClass?.simpleName ?: "unknown"}")
+            val causeName = error.cause?.javaClass?.simpleName ?: "unknown"
+            recordDiagnostic("player error=${error.errorCodeName} cause=$causeName")
             val q = quality
             val position = player.currentPosition.coerceAtLeast(0)
             when {
@@ -930,7 +935,7 @@ class PlayerActivity : FragmentActivity() {
         val send = Intent(Intent.ACTION_SEND)
             .setType("text/plain")
             .putExtra(Intent.EXTRA_TEXT, report)
-        startActivity(Intent.createChooser(send, "Отправить журнал плеера"))
+        startActivity(Intent.createChooser(send, getString(R.string.diagnostics_share)))
     }
 
     private fun retry() {

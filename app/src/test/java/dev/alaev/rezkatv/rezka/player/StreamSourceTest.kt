@@ -22,6 +22,12 @@ class StreamSourceTest {
     }
 
     @Test
+    fun recognizesSignedHlsUrlWithQueryAndFragment() {
+        val url = "https://cdn.test/stream.m3u8?token=abc123&expires=999#playback"
+        assertThat("signed HLS URLs remain HLS in baseline playback", StreamSource.isHls(url), `is`(true))
+    }
+
+    @Test
     fun leavesMp4AsNonHls() {
         val url = "https://cdn.test/stream.mp4?token=abc"
         val actual = StreamSource.isHls(url)

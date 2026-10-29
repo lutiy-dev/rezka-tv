@@ -1,9 +1,14 @@
 package dev.alaev.rezkatv.rezka
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.speech.RecognizerIntent
+import android.widget.Toast
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
+import android.widget.ImageButton
 import androidx.leanback.widget.VerticalGridView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
@@ -53,6 +58,7 @@ class SearchActivity : Activity() {
             adapter = results
         }
 
+        findViewById<ImageButton>(R.id.voice_search).setOnClickListener { startVoiceSearch() }
         showKeyboard()
         keyboard.requestFocus()
         intent.getStringExtra(EXTRA_QUERY)?.let {
@@ -64,6 +70,31 @@ class SearchActivity : Activity() {
     override fun onDestroy() {
         scope.cancel()
         super.onDestroy()
+    }
+
+    private fun startVoiceSearch() {
+        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_PROMPT, getString(R.string.search))
+        }
+        try {
+            startActivityForResult(intent, VOICE_REQUEST)
+        } catch (e: ActivityNotFoundException) {
+            Toast.makeText(this, R.string.voice_unavailable, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    @Deprecated("Android speech recognition result callback")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != VOICE_REQUEST || resultCode != RESULT_OK) return
+        val spoken = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+            ?.firstOrNull()?.trim().orEmpty()
+        if (spoken.isNotEmpty()) {
+            query.clear()
+            query.append(spoken.lowercase())
+            onQueryChanged()
+        }
     }
 
     private fun showKeyboard() {
@@ -120,6 +151,7 @@ class SearchActivity : Activity() {
 
     companion object {
         const val EXTRA_QUERY = "query"
+        private const val VOICE_REQUEST = 412
         private const val SPACE = "␣"
         private const val BACKSPACE = "⌫"
         private const val CLEAR = "✕"

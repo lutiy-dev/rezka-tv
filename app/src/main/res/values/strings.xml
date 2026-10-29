@@ -22,6 +22,8 @@
     <string name="nav_settings">Настройки</string>
 
     <string name="search">Поиск</string>
+    <string name="voice_search">Голосовой поиск</string>
+    <string name="voice_unavailable">Распознавание речи недоступно на устройстве</string>
     <string name="search_hint">Наберите название</string>
     <string name="nothing_found">Ничего не найдено</string>
 

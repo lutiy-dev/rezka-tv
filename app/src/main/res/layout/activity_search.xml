@@ -38,6 +38,16 @@
             android:textColorHint="@color/text_dim"
             android:textSize="20sp" />
 
+        <ImageButton
+            android:id="@+id/voice_search"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:contentDescription="@string/voice_search"
+            android:src="@android:drawable/ic_btn_speak_now"
+            android:background="@drawable/query_bg"
+            android:focusable="true" />
+
         <androidx.leanback.widget.VerticalGridView
             android:id="@+id/keyboard"
             android:layout_width="match_parent"

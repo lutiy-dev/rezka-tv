@@ -12,7 +12,7 @@ class StreamRecoveryTest {
     @Test
     fun triesNextMirrorBeforeChangingQuality() {
         val actual = StreamRecovery.next(listOf(low, high), high, setOf("1080p" to 0))
-        val expected = StreamChoice(high, 1)
+        val expected = StreamRecovery.Choice(high, 1)
         assertThat("mirror fallback", actual, `is`(expected))
     }
 
@@ -20,7 +20,7 @@ class StreamRecoveryTest {
     fun choosesLowerQualityAfterExhaustingMirrors() {
         val tried = setOf("1080p" to 0, "1080p" to 1)
         val actual = StreamRecovery.next(listOf(low, high), high, tried)
-        val expected = StreamChoice(low, 0)
+        val expected = StreamRecovery.Choice(low, 0)
         assertThat("quality fallback", actual, `is`(expected))
     }
 
@@ -28,7 +28,7 @@ class StreamRecoveryTest {
     fun stopsWhenEverySourceWasAttempted() {
         val tried = setOf("1080p" to 0, "1080p" to 1, "480p" to 0)
         val actual = StreamRecovery.next(listOf(low, high), low, tried)
-        val expected: StreamChoice? = null
+        val expected: StreamRecovery.Choice? = null
         assertThat("no infinite retry", actual, `is`(expected))
     }
 }

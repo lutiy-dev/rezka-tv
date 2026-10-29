@@ -14,7 +14,7 @@ object StreamRecovery {
         val lower = qualities.filter { it != current && it.height <= height }.sortedByDescending { it.height }
         val higher = qualities.filter { it != current && it.height > height }.sortedBy { it.height }
         return (listOfNotNull(current) + lower + higher).firstNotNullOfOrNull { quality ->
-            quality.urls.indices.firstOrNull { quality.label to it !in attempted }?.let { StreamChoice(quality, it) }
+            quality.urls.indices.firstOrNull { (quality.label to it) !in attempted }?.let { StreamChoice(quality, it) }
         }
     }
 }

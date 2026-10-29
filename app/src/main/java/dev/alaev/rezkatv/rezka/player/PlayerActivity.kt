@@ -803,9 +803,9 @@ class PlayerActivity : FragmentActivity() {
             recordDiagnostic("buffering wait=${now - bufferingSinceMs}ms buffered=${player.bufferedPosition}ms")
             lastBufferingReportMs = now
         }
-        if (waitingTooLong && player.playWhenReady && player.bufferedPosition <= player.currentPosition &&
-            now - bufferingSinceMs >= STALL_TIMEOUT_MS
-        ) {
+        val stalled = waitingTooLong && now - bufferingSinceMs >= STALL_TIMEOUT_MS
+        val noBufferedData = player.bufferedPosition <= player.currentPosition
+        if (stalled && player.playWhenReady && noBufferedData) {
             recordDiagnostic("buffering timeout, trying another source")
             bufferingSinceMs = 0L
             recoverSource()

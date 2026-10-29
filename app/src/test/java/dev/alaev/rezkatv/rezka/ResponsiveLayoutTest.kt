@@ -69,6 +69,13 @@ class ResponsiveLayoutTest {
     }
 
     @Test
+    fun usesFourCatalogColumnsOnPhoneLandscape() {
+        val actual = ResponsiveLayout.mobileCatalogColumns(648, landscape = true)
+        val expected = 4
+        assertThat("landscape fits four posters", actual, `is`(expected))
+    }
+
+    @Test
     fun usesTwoCatalogColumnsOnNarrowPhone() {
         val actual = ResponsiveLayout.mobileCatalogColumns(320)
         val expected = 2

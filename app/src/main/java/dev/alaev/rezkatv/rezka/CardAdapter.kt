@@ -1,6 +1,7 @@
 package dev.alaev.rezkatv.rezka
 
 import android.view.LayoutInflater
+import android.content.res.Configuration
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -46,16 +47,19 @@ class CardAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_card, parent, false)
         view.clipToOutline = true
-        if (catalogMode && ResponsiveLayout.isCompact(parent.resources.configuration.screenWidthDp)) {
+        val phone = ResponsiveLayout.isPhone(parent.resources.configuration.smallestScreenWidthDp)
+        if (catalogMode && phone) {
             val widthDp = parent.resources.configuration.screenWidthDp
-            val columns = ResponsiveLayout.mobileCatalogColumns(widthDp)
+            val landscape = parent.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+            val availableDp = widthDp - if (landscape) MOBILE_RAIL_DP else 0
+            val columns = ResponsiveLayout.mobileCatalogColumns(availableDp, landscape)
             val gapDp = CATALOG_GAP_DP
-            val itemWidthDp = (widthDp - CATALOG_PADDING_DP * 2 - gapDp * (columns - 1)) / columns
+            val itemWidthDp = (availableDp - CATALOG_PADDING_DP * 2 - gapDp * (columns - 1)) / columns
             val density = parent.resources.displayMetrics.density
             val width = (itemWidthDp * density).toInt()
             view.layoutParams = RecyclerView.LayoutParams(width, width * POSTER_HEIGHT_RATIO / POSTER_WIDTH_RATIO)
         }
-        if (ResponsiveLayout.isCompact(parent.resources.configuration.screenWidthDp)) {
+        if (phone) {
             view.isFocusable = false
             view.isFocusableInTouchMode = false
         }
@@ -88,6 +92,7 @@ class CardAdapter(
         const val FOCUS_SCALE = 1.08f
         const val PRELOAD_AHEAD = 8
         const val CATALOG_GAP_DP = 8
+        const val MOBILE_RAIL_DP = 72
         const val CATALOG_PADDING_DP = 12
         const val POSTER_HEIGHT_RATIO = 3
         const val POSTER_WIDTH_RATIO = 2

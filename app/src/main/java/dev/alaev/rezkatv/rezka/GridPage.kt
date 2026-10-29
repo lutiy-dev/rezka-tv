@@ -1,6 +1,7 @@
 package dev.alaev.rezkatv.rezka
 
 import android.app.Activity
+import android.content.res.Configuration
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.LinearLayout
@@ -25,10 +26,14 @@ class GridPage(
     private val info: TextView = activity.findViewById(R.id.grid_info)
     private val grid: VerticalGridView = activity.findViewById(R.id.grid)
     private val mobileGrid: RecyclerView = activity.findViewById(R.id.mobile_grid)
-    private val phoneMode = ResponsiveLayout.useMobileCatalog(activity.resources.configuration.screenWidthDp)
+    private val phoneMode = ResponsiveLayout.isPhone(activity.resources.configuration.smallestScreenWidthDp)
     private val adapter = CardAdapter(onFocus = ::showInfo, onClick = { activity.openDetails(it) }, catalogMode = true)
     private val columns = ResponsiveLayout.gridColumns(activity.resources.configuration.screenWidthDp)
-    private val mobileColumns = ResponsiveLayout.mobileCatalogColumns(activity.resources.configuration.screenWidthDp)
+    private val mobileColumns = ResponsiveLayout.mobileCatalogColumns(
+        activity.resources.configuration.screenWidthDp -
+            if (activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) MOBILE_RAIL_DP else 0,
+        activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE,
+    )
 
     private var category: Category? = null
     private var sort = Sort.POPULAR
@@ -156,5 +161,6 @@ class GridPage(
 
     private companion object {
         const val CACHE_TTL_MS = 15 * 60_000L
+        const val MOBILE_RAIL_DP = 72
     }
 }

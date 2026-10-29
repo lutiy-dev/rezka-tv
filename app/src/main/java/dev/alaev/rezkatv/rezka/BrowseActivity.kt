@@ -3,6 +3,9 @@ package dev.alaev.rezkatv.rezka
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.content.res.Configuration
+import android.view.Gravity
+import android.widget.FrameLayout
 import android.os.Process
 import android.view.FocusFinder
 import android.view.KeyEvent
@@ -31,7 +34,8 @@ class BrowseActivity : Activity() {
     private lateinit var choice: ChoicePanel
     private lateinit var root: BrowseFrameLayout
 
-    private val phoneMode by lazy { ResponsiveLayout.isCompact(resources.configuration.screenWidthDp) }
+    private val phoneMode by lazy { ResponsiveLayout.isPhone(resources.configuration.smallestScreenWidthDp) }
+    private var displayedOrientation = Configuration.ORIENTATION_UNDEFINED
     private var mobileNavigation: MobileNavigation? = null
     private var liteMode = false
     private var baseUrl = ""
@@ -44,6 +48,7 @@ class BrowseActivity : Activity() {
         liteMode = settings.liteMode
         baseUrl = client.baseUrl
         setContentView(R.layout.activity_browse)
+        displayedOrientation = resources.configuration.orientation
 
         root = findViewById(R.id.root)
         if (phoneMode) {
@@ -62,6 +67,10 @@ class BrowseActivity : Activity() {
         rail = NavRail(findViewById(R.id.rail), findViewById(R.id.rail_scrim), ::onSection) { ListsAssets.preload(this) }
 
         if (phoneMode) configureMobileNavigation() else configureTvNavigation()
+        savedInstanceState?.getString(STATE_SECTION)?.let { saved ->
+            Section.entries.find { it.name == saved && it != Section.SEARCH && it != Section.SETTINGS }
+                ?.takeIf { it != Section.HOME }?.let(::onSection)
+        }
 
         home.load()
         UpdateManager.check(this)
@@ -70,12 +79,25 @@ class BrowseActivity : Activity() {
     private fun configureMobileNavigation() {
         findViewById<View>(R.id.rail).visibility = View.GONE
         findViewById<View>(R.id.rail_scrim).visibility = View.GONE
+        val landscape = displayedOrientation == Configuration.ORIENTATION_LANDSCAPE
+        val density = resources.displayMetrics.density
         val content = findViewById<View>(R.id.content)
-        val params = content.layoutParams as android.widget.FrameLayout.LayoutParams
-        params.leftMargin = 0
-        params.bottomMargin = (MOBILE_BAR_DP * resources.displayMetrics.density).toInt()
+        val params = content.layoutParams as FrameLayout.LayoutParams
+        params.leftMargin = if (landscape) (MOBILE_RAIL_DP * density).toInt() else 0
+        params.bottomMargin = if (landscape) 0 else (MOBILE_BAR_DP * density).toInt()
         content.layoutParams = params
-        mobileNavigation = MobileNavigation(findViewById(R.id.mobile_nav), ::onSection)
+        val nav = findViewById<LinearLayout>(R.id.mobile_nav)
+        val navParams = nav.layoutParams as FrameLayout.LayoutParams
+        navParams.width = if (landscape) (MOBILE_RAIL_DP * density).toInt() else FrameLayout.LayoutParams.MATCH_PARENT
+        navParams.height = if (landscape) FrameLayout.LayoutParams.MATCH_PARENT else (MOBILE_BAR_DP * density).toInt()
+        navParams.gravity = if (landscape) Gravity.START else Gravity.BOTTOM
+        nav.layoutParams = navParams
+        findViewById<LinearLayout>(R.id.grid_header).orientation =
+            if (landscape) LinearLayout.HORIZONTAL else LinearLayout.VERTICAL
+        if (landscape) {
+            findViewById<View>(R.id.grid_page).setPadding(0, (8 * density).toInt(), 0, 0)
+        }
+        mobileNavigation = MobileNavigation(nav, ::onSection, vertical = landscape)
     }
 
     private fun configureTvNavigation() {
@@ -93,6 +115,16 @@ class BrowseActivity : Activity() {
                 else -> null
             }
         }
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (phoneMode && newConfig.orientation != displayedOrientation) recreate()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString(STATE_SECTION, rail.selected.name)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onRestart() {
@@ -183,5 +215,7 @@ class BrowseActivity : Activity() {
     private companion object {
         const val EXTRA_BASE = "base"
         const val MOBILE_BAR_DP = 64
+        const val MOBILE_RAIL_DP = 72
+        const val STATE_SECTION = "section"
     }
 }

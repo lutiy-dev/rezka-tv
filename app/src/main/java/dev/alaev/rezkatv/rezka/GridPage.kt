@@ -29,10 +29,11 @@ class GridPage(
     private val phoneMode = ResponsiveLayout.isPhone(activity.resources.configuration.smallestScreenWidthDp)
     private val adapter = CardAdapter(onFocus = ::showInfo, onClick = { activity.openDetails(it) }, catalogMode = true)
     private val columns = ResponsiveLayout.gridColumns(activity.resources.configuration.screenWidthDp)
+    private val landscape = activity.resources.configuration.orientation ==
+        Configuration.ORIENTATION_LANDSCAPE
     private val mobileColumns = ResponsiveLayout.mobileCatalogColumns(
-        activity.resources.configuration.screenWidthDp -
-            if (activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) MOBILE_RAIL_DP else 0,
-        activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE,
+        activity.resources.configuration.screenWidthDp - if (landscape) MOBILE_RAIL_DP else 0,
+        landscape,
     )
 
     private var category: Category? = null

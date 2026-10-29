@@ -2,14 +2,14 @@ package dev.alaev.rezkatv.rezka
 
 import android.app.Activity
 import android.content.Intent
-import android.os.Bundle
 import android.content.res.Configuration
-import android.view.Gravity
-import android.widget.FrameLayout
+import android.os.Bundle
 import android.os.Process
 import android.view.FocusFinder
+import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.leanback.widget.BrowseFrameLayout
@@ -21,6 +21,7 @@ import dev.alaev.rezkatv.rezka.lists.TopPage
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 
+@Suppress("TooManyFunctions")
 class BrowseActivity : Activity() {
 
     private val scope = MainScope()
@@ -95,7 +96,7 @@ class BrowseActivity : Activity() {
         findViewById<LinearLayout>(R.id.grid_header).orientation =
             if (landscape) LinearLayout.HORIZONTAL else LinearLayout.VERTICAL
         if (landscape) {
-            findViewById<View>(R.id.grid_page).setPadding(0, (8 * density).toInt(), 0, 0)
+            findViewById<View>(R.id.grid_page).setPadding(0, (MOBILE_HEADER_PADDING_DP * density).toInt(), 0, 0)
         }
         mobileNavigation = MobileNavigation(nav, ::onSection, vertical = landscape)
     }
@@ -216,6 +217,7 @@ class BrowseActivity : Activity() {
         const val EXTRA_BASE = "base"
         const val MOBILE_BAR_DP = 64
         const val MOBILE_RAIL_DP = 72
+        const val MOBILE_HEADER_PADDING_DP = 8
         const val STATE_SECTION = "section"
     }
 }

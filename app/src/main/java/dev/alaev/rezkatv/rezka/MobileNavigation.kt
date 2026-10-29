@@ -58,8 +58,11 @@ class MobileNavigation(
             compoundDrawablePadding = (3 * resources.displayMetrics.density).toInt()
             setOnClickListener { action() }
         }
-        val params = if (vertical) LinearLayout.LayoutParams(-1, 0, 1f)
-        else LinearLayout.LayoutParams(0, -1, 1f)
+        val params = if (vertical) {
+            LinearLayout.LayoutParams(-1, 0, 1f)
+        } else {
+            LinearLayout.LayoutParams(0, -1, 1f)
+        }
         bar.addView(button, params)
         return button
     }

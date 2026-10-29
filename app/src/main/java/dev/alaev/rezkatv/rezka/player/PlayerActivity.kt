@@ -498,10 +498,12 @@ class PlayerActivity : FragmentActivity() {
             val position = player.currentPosition.coerceAtLeast(0)
             when {
                 q != null && urlIndex + 1 < q.urls.size -> prepare(position, urlIndex + 1)
+
                 !refreshedAfterError -> {
                     refreshedAfterError = true
                     start(episode, position)
                 }
+
                 else -> showError()
             }
         }

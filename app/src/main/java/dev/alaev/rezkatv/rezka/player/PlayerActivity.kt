@@ -124,6 +124,9 @@ class PlayerActivity : FragmentActivity() {
     private var startJob: Job? = null
     private var preparing = false
     private var refreshedAfterError = false
+    private var bufferingSinceMs = 0L
+    private var lastBufferingReportMs = 0L
+    private val attemptedSources = mutableSetOf<Pair<String, Int>>()
     private var stopped = false
     private var requestedPosition = RESUME
     private var autoplay = true
@@ -354,6 +357,7 @@ class PlayerActivity : FragmentActivity() {
         val d = details ?: return
         val t = translator ?: return
         preparing = true
+        attemptedSources.clear()
         requestedPosition = positionMs
         episode = target
         serverSaved = false
@@ -387,10 +391,12 @@ class PlayerActivity : FragmentActivity() {
         val q = quality ?: return
         val s = streams ?: return
         urlIndex = index
+        attemptedSources.add(q.label to index)
+        bufferingSinceMs = SystemClock.elapsedRealtime()
         val url = q.urls[index]
         val item = MediaItem.Builder()
             .setUri(url)
-            .setMimeType(if (url.endsWith(".m3u8")) MimeTypes.APPLICATION_M3U8 else null)
+            .setMimeType(if (StreamSource.isHls(url)) MimeTypes.APPLICATION_M3U8 else null)
             .setSubtitleConfigurations(s.subtitles.map {
                 MediaItem.SubtitleConfiguration.Builder(Uri.parse(it.url))
                     .setMimeType(MimeTypes.TEXT_VTT)
@@ -401,7 +407,7 @@ class PlayerActivity : FragmentActivity() {
             })
             .build()
         Log.i(TAG, "play ${episode?.code ?: "film"} ${q.label} #$index")
-        val streamType = if (url.substringBefore('?').endsWith(".m3u8")) "hls" else "other"
+        val streamType = if (StreamSource.isHls(url)) "hls" else "other"
         recordDiagnostic("prepare quality=${q.label} mirror=$index type=$streamType")
         player.setMediaItem(item, positionMs)
         player.prepare()
@@ -463,6 +469,8 @@ class PlayerActivity : FragmentActivity() {
     private inner class PlayerListener : Player.Listener {
         override fun onPlaybackStateChanged(state: Int) {
             recordDiagnostic("state=$state buffered=${player.bufferedPosition}ms")
+            bufferingSinceMs = if (state == Player.STATE_BUFFERING) SystemClock.elapsedRealtime() else 0L
+            lastBufferingReportMs = 0L
             when (state) {
                 Player.STATE_READY -> {
                     preparing = false
@@ -489,18 +497,7 @@ class PlayerActivity : FragmentActivity() {
             Log.w(TAG, "playback error ${error.errorCodeName}", error)
             val causeName = error.cause?.javaClass?.simpleName ?: "unknown"
             recordDiagnostic("player error=${error.errorCodeName} cause=$causeName")
-            val q = quality
-            val position = player.currentPosition.coerceAtLeast(0)
-            when {
-                q != null && urlIndex + 1 < q.urls.size -> prepare(position, urlIndex + 1)
-
-                !refreshedAfterError -> {
-                    refreshedAfterError = true
-                    start(episode, position)
-                }
-
-                else -> showError()
-            }
+            recoverSource()
         }
 
         override fun onCues(cueGroup: CueGroup) = subtitlesView.setCues(cueGroup.cues)
@@ -510,6 +507,25 @@ class PlayerActivity : FragmentActivity() {
             if (wanted.language != null) return
             val selected = tracks.groups.any { it.type == C.TRACK_TYPE_TEXT && it.isSelected && it.mediaTrackGroup.getFormat(0).label == wanted.label }
             if (!selected) applySubtitles()
+        }
+    }
+
+    private fun recoverSource() {
+        val position = player.currentPosition.coerceAtLeast(0)
+        val next = StreamRecovery.next(streams?.qualities.orEmpty(), quality, attemptedSources)
+            .takeIf { attemptedSources.size < MAX_SOURCE_ATTEMPTS }
+        when {
+            next != null -> {
+                quality = next.quality
+                prepare(position, next.mirrorIndex)
+            }
+
+            !refreshedAfterError -> {
+                refreshedAfterError = true
+                start(episode, position)
+            }
+
+            else -> showError()
         }
     }
 
@@ -779,6 +795,8 @@ class PlayerActivity : FragmentActivity() {
     }
 
     private fun onTick() {
+        val now = SystemClock.elapsedRealtime()
+        checkStalledBuffer(now)
         if (player.isPlaying) {
             val now = SystemClock.elapsedRealtime()
             if (now - lastLocalSave >= LOCAL_SAVE_MS) saveProgress(toServer = false)
@@ -786,6 +804,22 @@ class PlayerActivity : FragmentActivity() {
             if (firstSave || (serverSaved && now - lastServerSave >= SERVER_SAVE_MS)) saveProgress(toServer = true)
         }
         updateNextUp()
+    }
+
+    private fun checkStalledBuffer(now: Long) {
+        val waitingTooLong = bufferingSinceMs > 0 && now - bufferingSinceMs >= BUFFERING_REPORT_MS
+        val reportDue = lastBufferingReportMs == 0L || now - lastBufferingReportMs >= BUFFERING_REPORT_MS
+        if (waitingTooLong && reportDue) {
+            recordDiagnostic("buffering wait=${now - bufferingSinceMs}ms buffered=${player.bufferedPosition}ms")
+            lastBufferingReportMs = now
+        }
+        val stalled = waitingTooLong && now - bufferingSinceMs >= STALL_TIMEOUT_MS
+        val noBufferedData = player.bufferedPosition <= player.currentPosition
+        if (stalled && player.playWhenReady && noBufferedData) {
+            recordDiagnostic("buffering timeout, trying another source")
+            bufferingSinceMs = 0L
+            recoverSource()
+        }
     }
 
     private fun updateNextUp() {
@@ -980,6 +1014,9 @@ class PlayerActivity : FragmentActivity() {
         private const val NEXT_UP_HYSTERESIS_MS = 5_000L
         private const val NEXT_UP_COUNTDOWN_MS = 10_000L
         private const val HTTP_TIMEOUT_MS = 15_000
+        private const val BUFFERING_REPORT_MS = 10_000L
+        private const val STALL_TIMEOUT_MS = 30_000L
+        private const val MAX_SOURCE_ATTEMPTS = 6
         private const val BUFFER_BYTES = 48 * 1024 * 1024
         private const val SUBTITLES_ABOVE_CONTROLS = 0.34f
         private const val SUBTITLES_BOTTOM = 0.1f

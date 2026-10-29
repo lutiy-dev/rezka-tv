@@ -77,7 +77,6 @@ class BrowseActivity : Activity() {
         content.layoutParams = params
         mobileNavigation = MobileNavigation(findViewById(R.id.mobile_nav), ::onSection)
     }
-    }
 
     private fun configureTvNavigation() {
         root.onFocusSearchListener = BrowseFrameLayout.OnFocusSearchListener { focused, direction ->

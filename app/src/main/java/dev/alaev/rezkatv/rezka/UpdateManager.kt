@@ -31,6 +31,15 @@ object UpdateManager {
 
     data class Release(val version: String, val apkUrl: String)
 
+    private var awaitingInstallPermission: Release? = null
+
+    fun resumePendingInstall(activity: Activity) {
+        val release = awaitingInstallPermission ?: return
+        if (!activity.packageManager.canRequestPackageInstalls()) return
+        awaitingInstallPermission = null
+        downloadAndInstall(activity, release)
+    }
+
     fun check(activity: Activity, force: Boolean = false) {
         val prefs = activity.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val now = System.currentTimeMillis()
@@ -131,6 +140,7 @@ object UpdateManager {
 
     private fun downloadAndInstall(activity: Activity, release: Release) {
         if (!activity.packageManager.canRequestPackageInstalls()) {
+            awaitingInstallPermission = release
             Toast.makeText(activity, R.string.update_allow_install, Toast.LENGTH_LONG).show()
             activity.startActivity(
                 Intent(

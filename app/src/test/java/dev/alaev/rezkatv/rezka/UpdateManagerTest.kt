@@ -44,6 +44,14 @@ class UpdateManagerTest {
     }
 
     @Test
+    fun rejectsRepositoryLookalike() {
+        val url = "https://github.com.evil.example/lutiy-dev/rezka-tv/releases/download/v1.1.5/app.apk"
+        val actual = UpdateManager.isTrustedApkUrl(url)
+        val expected = false
+        assertThat("lookalike repository host is rejected", actual, `is`(expected))
+    }
+
+    @Test
     fun selectsNewestReleaseSource() {
         val first = UpdateManager.Release("1.1.3", "manifest")
         val second = UpdateManager.Release("1.1.4", "api")

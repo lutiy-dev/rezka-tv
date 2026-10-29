@@ -23,6 +23,11 @@ class SettingsActivity : FragmentActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        UpdateManager.resumePendingInstall(this)
+    }
+
     class SettingsFragment : LeanbackSettingsFragmentCompat() {
         override fun onPreferenceStartInitialScreen() = startPreferenceFragment(PrefsFragment())
 

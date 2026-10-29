@@ -6,7 +6,6 @@ import android.os.Process
 import android.os.SystemClock
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -14,13 +13,13 @@ import android.widget.TextView
 import androidx.leanback.widget.HorizontalGridView
 import androidx.leanback.widget.OnChildViewHolderSelectedListener
 import androidx.leanback.widget.VerticalGridView
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dev.alaev.rezkatv.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlin.math.abs
 
 class HomePage(
     private val activity: Activity,
@@ -37,6 +36,7 @@ class HomePage(
 
     private val page: View = activity.findViewById(R.id.home)
     private val rowsView: VerticalGridView = activity.findViewById(R.id.rows)
+    private val mobileRows: RecyclerView = activity.findViewById(R.id.mobile_rows)
     private val heroArtBox: View = activity.findViewById(R.id.hero_art_box)
     private val heroArt: ImageView = activity.findViewById(R.id.hero_art)
     private val heroTitle: TextView = activity.findViewById(R.id.hero_title)
@@ -58,7 +58,14 @@ class HomePage(
     val isEmpty get() = rows.isEmpty()
 
     init {
-        rowsView.adapter = rowsAdapter
+        if (compact) {
+            rowsView.visibility = View.GONE
+            mobileRows.visibility = View.VISIBLE
+            mobileRows.layoutManager = LinearLayoutManager(activity)
+            mobileRows.adapter = rowsAdapter
+        } else {
+            rowsView.adapter = rowsAdapter
+        }
         if (ResponsiveLayout.useEdgeAwareRows(activity.resources.configuration.screenWidthDp)) {
             rowsView.keepFocusInsideEdges()
         } else {
@@ -81,7 +88,9 @@ class HomePage(
         heroJob?.cancel()
     }
 
-    fun focus() = rowsView.requestFocus()
+    fun focus() {
+        if (!compact) rowsView.requestFocus()
+    }
 
     fun onUserKey() {
         userNavigated = true
@@ -105,9 +114,11 @@ class HomePage(
     }
 
     fun onBack(): Boolean {
-        if (rowsView.selectedPosition <= 0) return false
-        rowsView.setSelectedPositionSmooth(0)
-        return true
+        val canScroll = if (compact) mobileRows.computeVerticalScrollOffset() > 0 else rowsView.selectedPosition > 0
+        if (canScroll) {
+            if (compact) mobileRows.smoothScrollToPosition(0) else rowsView.setSelectedPositionSmooth(0)
+        }
+        return canScroll
     }
 
     private fun show(shelf: Shelf, page: Page) {
@@ -141,7 +152,7 @@ class HomePage(
         rowsAdapter.notifyItemInserted(index)
         loader.hideStatus()
         if (rows.size == 1) Log.i(TAG, "first row: ${SystemClock.elapsedRealtime() - Process.getStartElapsedRealtime()} ms after process start")
-        if (!userNavigated && isVisible) {
+        if (!compact && !userNavigated && isVisible) {
             rowsView.selectedPosition = 0
             rowsView.requestFocus()
         }
@@ -202,59 +213,42 @@ class HomePage(
 
     private inner class RowHolder(view: View) : RecyclerView.ViewHolder(view) {
         val title: TextView = view.findViewById(R.id.row_title)
-        val cards: HorizontalGridView = view.findViewById(R.id.row_cards)
+        val cards: RecyclerView = view.findViewById(R.id.row_cards)
         var row: ShelfRow? = null
 
         init {
             cards.setRecycledViewPool(cardPool)
             if (compact) {
-                cards.addOnItemTouchListener(object : RecyclerView.SimpleOnItemTouchListener() {
-                    private var downX = 0f
-                    private var downY = 0f
-                    override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
-                        if (e.actionMasked == MotionEvent.ACTION_DOWN) {
-                            downX = e.x
-                            downY = e.y
-                            rv.parent?.requestDisallowInterceptTouchEvent(false)
-                        } else if (e.actionMasked == MotionEvent.ACTION_MOVE) {
-                            val dx = abs(e.x - downX)
-                            val dy = abs(e.y - downY)
-                            if (dx > TOUCH_DIRECTION_THRESHOLD_PX || dy > TOUCH_DIRECTION_THRESHOLD_PX) {
-                                rv.parent?.requestDisallowInterceptTouchEvent(dx > dy)
-                            }
-                        } else if (e.actionMasked == MotionEvent.ACTION_UP ||
-                            e.actionMasked == MotionEvent.ACTION_CANCEL
-                        ) {
-                            rv.parent?.requestDisallowInterceptTouchEvent(false)
-                        }
-                        return false
+                cards.layoutManager = LinearLayoutManager(activity, RecyclerView.HORIZONTAL, false)
+            } else {
+                val tvCards = cards as HorizontalGridView
+                tvCards.pinFocusToStart(tvCards.paddingStart)
+                val overflow = activity.resources.getDimensionPixelSize(R.dimen.card_focus_overflow)
+                tvCards.clipBounds = Rect(tvCards.paddingStart - overflow, -CLIP_FAR, CLIP_FAR, CLIP_FAR)
+                tvCards.horizontalSpacing = activity.resources.getDimensionPixelSize(R.dimen.card_spacing)
+                tvCards.setOnChildViewHolderSelectedListener(object : OnChildViewHolderSelectedListener() {
+                    override fun onChildViewHolderSelected(
+                        parent: RecyclerView, child: RecyclerView.ViewHolder?, position: Int, subposition: Int,
+                    ) {
+                        row?.selected = position
                     }
                 })
             }
-            cards.pinFocusToStart(cards.paddingStart)
-            val overflow = activity.resources.getDimensionPixelSize(R.dimen.card_focus_overflow)
-            cards.clipBounds = Rect(cards.paddingStart - overflow, -CLIP_FAR, CLIP_FAR, CLIP_FAR)
-            cards.horizontalSpacing = activity.resources.getDimensionPixelSize(R.dimen.card_spacing)
-            cards.setOnChildViewHolderSelectedListener(object : OnChildViewHolderSelectedListener() {
-                override fun onChildViewHolderSelected(
-                    parent: RecyclerView, child: RecyclerView.ViewHolder?, position: Int, subposition: Int,
-                ) {
-                    row?.selected = position
-                }
-            })
         }
     }
 
     private inner class RowsAdapter : RecyclerView.Adapter<RowHolder>() {
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-            RowHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_row, parent, false))
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RowHolder {
+            val layout = if (compact) R.layout.item_row_mobile else R.layout.item_row
+            return RowHolder(LayoutInflater.from(parent.context).inflate(layout, parent, false))
+        }
 
         override fun onBindViewHolder(holder: RowHolder, position: Int) {
             val row = rows[position]
             holder.row = row
             holder.title.text = row.shelf.title
             if (holder.cards.adapter !== row.adapter) holder.cards.adapter = row.adapter
-            holder.cards.selectedPosition = row.selected
+            if (!compact) (holder.cards as HorizontalGridView).selectedPosition = row.selected
         }
 
         override fun getItemCount() = rows.size
@@ -264,7 +258,6 @@ class HomePage(
         const val HERO_ART_DELAY_MS = 150L
         const val HERO_DETAILS_DELAY_MS = 550L
         const val CLIP_FAR = 100_000
-        const val TOUCH_DIRECTION_THRESHOLD_PX = 12f
         const val TAG = "RezkaTv"
     }
 }

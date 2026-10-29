@@ -48,6 +48,16 @@ class ResponsiveLayoutTest {
     }
 
     @Test
+    fun keepsPhoneRowsInsideTouchMode() {
+        assertThat("compact screen has touch shelves", ResponsiveLayout.useMobileCatalog(400), `is`(true))
+    }
+
+    @Test
+    fun keepsTvRowsOnLeanback() {
+        assertThat("wide screen keeps D-pad shelves", ResponsiveLayout.useMobileCatalog(800), `is`(false))
+    }
+
+    @Test
     fun usesTwoGridColumnsOnPhone() {
         val actual = ResponsiveLayout.gridColumns(360)
         val expected = 2

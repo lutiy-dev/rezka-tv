@@ -147,6 +147,19 @@
 
     <include layout="@layout/view_choice_panel" />
 
+    <TextView
+        android:id="@+id/diagnostics_share"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="32dp"
+        android:background="@drawable/osd_bg"
+        android:padding="12dp"
+        android:text="Отправить диагностический лог"
+        android:textColor="@color/text"
+        android:textSize="14sp"
+        android:visibility="gone" />
+
     <LinearLayout
         android:id="@+id/mobile_controls"
         android:layout_width="match_parent"

@@ -97,6 +97,9 @@ class PlayerActivity : FragmentActivity() {
     private lateinit var loadingView: View
     private lateinit var loadingTitle: TextView
     private lateinit var loadingInfo: TextView
+    private lateinit var diagnosticsButton: TextView
+    private val diagnostics = PlaybackTrace()
+    private val diagnosticsStart = SystemClock.elapsedRealtime()
     private lateinit var osd: TextView
     private lateinit var nextUp: View
     private lateinit var nextUpTitle: TextView
@@ -164,6 +167,10 @@ class PlayerActivity : FragmentActivity() {
         loadingView = findViewById(R.id.loading)
         loadingTitle = findViewById(R.id.loading_title)
         loadingInfo = findViewById(R.id.loading_info)
+        diagnosticsButton = findViewById(R.id.diagnostics_share)
+        diagnosticsButton.setOnClickListener { shareDiagnostics() }
+        diagnosticsButton.visibility = if (phoneMode) View.VISIBLE else View.GONE
+        recordDiagnostic("player opened")
         osd = findViewById(R.id.osd)
         nextUp = findViewById(R.id.next_up)
         nextUpTitle = findViewById(R.id.next_up_title)
@@ -192,6 +199,7 @@ class PlayerActivity : FragmentActivity() {
     override fun onStart() {
         super.onStart()
         stopped = false
+        recordDiagnostic("activity started")
         handler.post(tick)
         val sleptMs = if (screenOffAt > 0) SystemClock.elapsedRealtime() - screenOffAt else 0
         screenOffAt = 0
@@ -205,6 +213,7 @@ class PlayerActivity : FragmentActivity() {
 
     override fun onStop() {
         stopped = true
+        recordDiagnostic("activity stopped")
         handler.removeCallbacks(tick)
         val screenOff = !getSystemService(PowerManager::class.java).isInteractive
         if (screenOff) screenOffAt = SystemClock.elapsedRealtime()
@@ -229,11 +238,13 @@ class PlayerActivity : FragmentActivity() {
     }
 
     private fun load() {
+        recordDiagnostic("details request")
         val url = requireNotNull(intent.getStringExtra(EXTRA_URL))
         scope.launch {
             val sync = intent.getStringExtra(EXTRA_TRANSLATOR) == null
             val d = loader.load { if (sync) client.details(url) else client.recentDetails(url) } ?: return@launch showError()
             details = d
+            recordDiagnostic("details ready series=${d.isSeries} translators=${d.translators.size}")
             val local = sessions.read()?.takeIf { it.app == WatchSession.APP_REZKA && it.url == d.url }
             reported = local?.reported
             val plan = if (sync) ResumePlanner.plan(local, d.sitePosition()) else null
@@ -351,12 +362,14 @@ class PlayerActivity : FragmentActivity() {
         errorView.visibility = View.GONE
         updateTitles()
         showLoading()
+        recordDiagnostic("stream request episode=${target?.code ?: "film"} translator=${t.id.take(24)}")
 
         startJob?.cancel()
         startJob = scope.launch {
             val s = loader.load { client.streams(d, t, target) } ?: return@launch showError()
             if (s.qualities.isEmpty()) return@launch fallbackToSite()
             streams = s
+            recordDiagnostic("stream response qualities=${s.qualities.size} mirrors=${s.qualities.sumOf { it.urls.size }}")
             quality = QualityPicker.pick(s.qualities, settings.quality, screenHeight())
             subtitle = s.subtitles.find { it.language != null && it.language == s.defaultSubtitle }
             glue?.setSubtitlesAvailable(s.subtitles.isNotEmpty())
@@ -387,6 +400,7 @@ class PlayerActivity : FragmentActivity() {
             })
             .build()
         Log.i(TAG, "play ${episode?.code ?: "film"} ${q.label} #$index")
+        recordDiagnostic("prepare quality=${q.label} mirror=$index type=${if (url.substringBefore('?').endsWith(".m3u8")) "hls" else "other"}")
         player.setMediaItem(item, positionMs)
         player.prepare()
         player.playWhenReady = !stopped && autoplay
@@ -446,11 +460,13 @@ class PlayerActivity : FragmentActivity() {
 
     private inner class PlayerListener : Player.Listener {
         override fun onPlaybackStateChanged(state: Int) {
+            recordDiagnostic("state=$state buffered=${player.bufferedPosition}ms")
             when (state) {
                 Player.STATE_READY -> {
                     preparing = false
                     refreshedAfterError = false
                     loadingView.visibility = View.GONE
+                    diagnosticsButton.visibility = View.GONE
                     installSeekProvider()
                 }
                 Player.STATE_ENDED -> onEnded()
@@ -467,6 +483,7 @@ class PlayerActivity : FragmentActivity() {
 
         override fun onPlayerError(error: PlaybackException) {
             Log.w(TAG, "playback error ${error.errorCodeName}", error)
+            recordDiagnostic("player error=${error.errorCodeName} cause=${error.cause?.javaClass?.simpleName ?: "unknown"}")
             val q = quality
             val position = player.currentPosition.coerceAtLeast(0)
             when {
@@ -879,6 +896,7 @@ class PlayerActivity : FragmentActivity() {
     }
 
     private fun showLoading() {
+        if (phoneMode) diagnosticsButton.visibility = View.VISIBLE
         if (player.playbackState == Player.STATE_IDLE || player.mediaItemCount == 0) loadingView.visibility = View.VISIBLE
         else player.pause()
     }
@@ -891,12 +909,32 @@ class PlayerActivity : FragmentActivity() {
     }
 
     private fun showError() {
+        recordDiagnostic("loading failed")
+        if (phoneMode) diagnosticsButton.visibility = View.VISIBLE
         loadingView.visibility = View.GONE
         errorView.visibility = View.VISIBLE
         errorView.requestFocus()
     }
 
+    private fun recordDiagnostic(event: String) {
+        diagnostics.add(SystemClock.elapsedRealtime() - diagnosticsStart, event)
+    }
+
+    private fun shareDiagnostics() {
+        val snapshot = diagnostics.snapshot() +
+            "\ncurrentState=${player.playbackState}" +
+            " bufferedMs=${player.bufferedPosition}" +
+            " positionMs=${player.currentPosition}" +
+            " readyToPlay=${player.playWhenReady}"
+        val report = "Rezka TV diagnostic session\n" + snapshot
+        val send = Intent(Intent.ACTION_SEND)
+            .setType("text/plain")
+            .putExtra(Intent.EXTRA_TEXT, report)
+        startActivity(Intent.createChooser(send, "Отправить журнал плеера"))
+    }
+
     private fun retry() {
+        recordDiagnostic("manual retry")
         errorView.visibility = View.GONE
         when {
             details == null -> load()

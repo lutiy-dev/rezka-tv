@@ -30,3 +30,14 @@ jobs:
         env:
           PYTHON: python
           GATE_BASE: origin/${{ github.base_ref || 'main' }}
+
+      - name: Build QA APK
+        if: github.head_ref == 'test/1.2.0-qa-apk'
+        run: ./gradlew assembleDebug
+      - name: Upload QA APK
+        if: github.head_ref == 'test/1.2.0-qa-apk'
+        uses: actions/upload-artifact@v7
+        with:
+          name: Rezka-TV-1.2.0-QA
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

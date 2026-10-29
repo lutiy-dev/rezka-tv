@@ -1,0 +1,1 @@
+Rezka TV 1.1.7 BETA: AndroidX touch lists for phone Home and catalogs; TV Leanback preserved. Playback code unchanged from 1.1.4; film playback on device NOT CONFIRMED. Test navigation, scroll, card taps, direct film playback, translators, seasons, episodes, and updates.

@@ -8,10 +8,10 @@ import android.widget.TextView
 import androidx.leanback.widget.VerticalGridView
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import dev.alaev.rezkatv.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import dev.alaev.rezkatv.R
 
 class GridPage(
     private val activity: Activity,
@@ -74,14 +74,19 @@ class GridPage(
     }
 
     fun onBack(): Boolean {
-        if (phoneMode) {
-            if (mobileGrid.computeVerticalScrollOffset() == 0) return false
-            mobileGrid.smoothScrollToPosition(0)
-            return true
+        val canScroll = if (phoneMode) {
+            mobileGrid.computeVerticalScrollOffset() > 0
+        } else {
+            grid.selectedPosition >= columns
         }
-        if (grid.selectedPosition < columns) return false
-        grid.setSelectedPositionSmooth(0)
-        return true
+        if (canScroll) {
+            if (phoneMode) {
+                mobileGrid.smoothScrollToPosition(0)
+            } else {
+                grid.setSelectedPositionSmooth(0)
+            }
+        }
+        return canScroll
     }
 
     private fun buildChips(category: Category) {

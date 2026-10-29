@@ -88,8 +88,11 @@ class EpisodesPanel(private val root: View) {
         seasonList.adapter = ChipAdapter(
             seasons.map { context.getString(R.string.season_n, it) },
             seasonIndex,
-            onFocus = { i -> showSeason(seasons[i]) },
-            onClick = { i -> showSeason(seasons[i]); episodeList.requestFocus() },
+            onFocus = { i -> selectedSeason(seasons, i)?.let(::showSeason) },
+            onClick = { i ->
+                selectedSeason(seasons, i)?.let(::showSeason)
+                episodeList.requestFocus()
+            },
         )
         seasonList.selectIndex(seasonIndex)
         showSeason(startSeason)
@@ -109,3 +112,5 @@ class EpisodesPanel(private val root: View) {
 private fun RecyclerView.selectIndex(index: Int) {
     if (this is VerticalGridView) selectedPosition = index else scrollToPosition(index)
 }
+
+internal fun selectedSeason(seasons: List<Int>, index: Int): Int? = seasons.getOrNull(index)

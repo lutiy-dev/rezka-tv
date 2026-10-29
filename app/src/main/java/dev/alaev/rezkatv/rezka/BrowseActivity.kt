@@ -93,7 +93,6 @@ class BrowseActivity : Activity() {
                 else -> null
             }
         }
-
     }
 
     override fun onRestart() {
@@ -121,10 +120,10 @@ class BrowseActivity : Activity() {
 
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        if (phoneMode) onPhoneBack() else onTvBack()
-    }
-
-    private fun onPhoneBack() {
+        if (!phoneMode) {
+            onTvBack()
+            return
+        }
         when {
             choice.isShowing -> choice.hide()
             home.isVisible && home.onBack() -> Unit
@@ -151,7 +150,9 @@ class BrowseActivity : Activity() {
     private fun onSection(section: Section) {
         when (section) {
             Section.SEARCH -> openSearch()
+
             Section.SETTINGS -> startActivity(Intent(this, SettingsActivity::class.java))
+
             else -> {
                 rail.selected = section
                 mobileNavigation?.update(section)

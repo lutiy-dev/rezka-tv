@@ -112,4 +112,3 @@ class EpisodesPanel(private val root: View) {
 private fun RecyclerView.selectIndex(index: Int) {
     if (this is VerticalGridView) selectedPosition = index else scrollToPosition(index)
 }
-

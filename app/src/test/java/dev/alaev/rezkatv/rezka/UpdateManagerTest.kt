@@ -28,6 +28,30 @@ class UpdateManagerTest {
     }
 
     @Test
+    fun ignoresSameVersion() {
+        val versions = "1.1.4" to "1.1.4"
+        val actual = UpdateManager.isNewer(versions.first, versions.second)
+        val expected = false
+        assertThat("same version is not newer", actual, `is`(expected))
+    }
+
+    @Test
+    fun acceptsNewMajorVersion() {
+        val versions = "2.0.0" to "1.9.9"
+        val actual = UpdateManager.isNewer(versions.first, versions.second)
+        val expected = true
+        assertThat("major version update is newer", actual, `is`(expected))
+    }
+
+    @Test
+    fun usesManifestWhenApiUnavailable() {
+        val first = UpdateManager.Release("1.1.4", "manifest")
+        val actual = UpdateManager.newest(first, null)?.version
+        val expected = first.version
+        assertThat("manifest remains available", actual, `is`(expected))
+    }
+
+    @Test
     fun selectsNewestReleaseSource() {
         val first = UpdateManager.Release("1.1.3", "manifest")
         val second = UpdateManager.Release("1.1.4", "api")

@@ -10,6 +10,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import dev.alaev.rezkatv.R
 
+@Suppress("MagicNumber")
 internal open class MobileSettingsPanel(protected val activity: Activity) {
     protected val background = Color.rgb(16, 19, 24)
     protected val surface = Color.rgb(32, 37, 45)
@@ -18,9 +19,11 @@ internal open class MobileSettingsPanel(protected val activity: Activity) {
     protected val text = Color.WHITE
 
     protected fun section(root: LinearLayout, title: String) {
-        root.addView(label(title.uppercase(), 12f, accent, true).apply {
-            setPadding(dp(2), dp(22), 0, dp(10))
-        })
+        root.addView(
+            label(title.uppercase(), 12f, accent, true).apply {
+                setPadding(dp(2), dp(22), 0, dp(10))
+            },
+        )
     }
 
     protected fun panel(root: LinearLayout): LinearLayout {
@@ -37,7 +40,10 @@ internal open class MobileSettingsPanel(protected val activity: Activity) {
     }
 
     protected fun row(
-        parent: LinearLayout, title: String, trailing: View? = null, detail: String? = null,
+        parent: LinearLayout,
+        title: String,
+        trailing: View? = null,
+        detail: String? = null,
     ): LinearLayout {
         val outer = LinearLayout(activity).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -49,9 +55,13 @@ internal open class MobileSettingsPanel(protected val activity: Activity) {
         }
         val words = LinearLayout(activity).apply { orientation = LinearLayout.VERTICAL }
         words.addView(label(title, 16f, text, true))
-        if (detail != null) words.addView(label(detail, 12f, muted).apply {
-            setPadding(0, dp(3), 0, 0)
-        })
+        if (detail != null) {
+            words.addView(
+                label(detail, 12f, muted).apply {
+                    setPadding(0, dp(3), 0, 0)
+                },
+            )
+        }
         outer.addView(words, LinearLayout.LayoutParams(0, -2, 1f))
         if (trailing != null) outer.addView(trailing)
         parent.addView(outer, LinearLayout.LayoutParams(-1, -2))
@@ -59,12 +69,13 @@ internal open class MobileSettingsPanel(protected val activity: Activity) {
     }
 
     protected fun divider(parent: LinearLayout) {
-        parent.addView(View(activity).apply { setBackgroundColor(Color.rgb(53, 59, 68)) },
-            LinearLayout.LayoutParams(-1, dp(1)))
+        parent.addView(
+            View(activity).apply { setBackgroundColor(Color.rgb(53, 59, 68)) },
+            LinearLayout.LayoutParams(-1, dp(1)),
+        )
     }
 
-    protected fun label(value: String, size: Float, color: Int, bold: Boolean = false) =
-        TextView(activity).apply {
+    protected fun label(value: String, size: Float, color: Int, bold: Boolean = false) = TextView(activity).apply {
             text = value
             textSize = size
             setTextColor(color)
@@ -72,5 +83,7 @@ internal open class MobileSettingsPanel(protected val activity: Activity) {
             gravity = Gravity.CENTER_VERTICAL
         }
 
-    protected fun dp(value: Int) = (value * activity.resources.displayMetrics.density + 0.5f).toInt()
+    protected fun dp(value: Int): Int {
+        return (value * activity.resources.displayMetrics.density + 0.5f).toInt()
+    }
 }

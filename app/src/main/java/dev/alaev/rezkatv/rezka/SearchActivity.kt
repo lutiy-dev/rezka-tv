@@ -99,7 +99,6 @@ class SearchActivity : Activity() {
                     onQueryChanged()
                 }
             })
-            input.setText(savedInstanceState?.getString(STATE_QUERY) ?: intent.getStringExtra(EXTRA_QUERY).orEmpty())
             configureKeyboardDismiss(input)
             input.post {
                 (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)

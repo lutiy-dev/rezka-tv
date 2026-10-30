@@ -201,7 +201,3 @@ class SearchActivity : Activity() {
         private const val VOICE_REQUEST = 1001
     }
 }
-
-internal object VoiceSearchQuery {
-    fun first(results: ArrayList<String>?): String? = results?.firstOrNull()?.takeIf { it.isNotBlank() }
-}

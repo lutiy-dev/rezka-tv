@@ -22,6 +22,7 @@
 
     <string name="search">Поиск</string>
     <string name="voice_search">🎙</string>
+    <string name="voice_search_action">Голосовой поиск</string>
     <string name="voice_search_unavailable">Голосовой ввод недоступен на устройстве</string>
     <string name="search_hint">Наберите название</string>
     <string name="nothing_found">Ничего не найдено</string>

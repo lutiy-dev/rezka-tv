@@ -32,12 +32,12 @@ jobs:
           GATE_BASE: origin/${{ github.base_ref || 'main' }}
 
       - name: Build QA APK
-        if: github.head_ref == 'test/1.2.0-qa-apk'
+        if: github.head_ref == 'test/1.2.0-qa-apk' || github.head_ref == 'test/1.2.0-playback-baseline'
         run: ./gradlew assembleDebug
       - name: Upload QA APK
-        if: github.head_ref == 'test/1.2.0-qa-apk'
+        if: github.head_ref == 'test/1.2.0-qa-apk' || github.head_ref == 'test/1.2.0-playback-baseline'
         uses: actions/upload-artifact@v7
         with:
-          name: Rezka-TV-1.2.0-QA
+          name: Rezka-TV-1.2.0-${{ github.head_ref == 'test/1.2.0-playback-baseline' && 'Playback-Baseline' || 'QA' }}
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error

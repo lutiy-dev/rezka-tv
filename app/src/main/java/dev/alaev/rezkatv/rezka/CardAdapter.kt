@@ -53,7 +53,9 @@ class CardAdapter(
             val widthDp = parent.resources.configuration.screenWidthDp
             val landscape = parent.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
             val availableDp = widthDp - if (landscape) MOBILE_RAIL_DP else 0
-            val columns = if (searchMode) ResponsiveLayout.searchColumns(widthDp) else {
+            val columns = if (searchMode) {
+                ResponsiveLayout.searchColumns(widthDp)
+            } else {
                 ResponsiveLayout.mobileCatalogColumns(availableDp, landscape)
             }
             val gapDp = if (searchMode) {

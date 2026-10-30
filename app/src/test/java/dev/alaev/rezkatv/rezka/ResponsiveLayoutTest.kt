@@ -76,6 +76,22 @@ class ResponsiveLayoutTest {
     }
 
     @Test
+    fun fitsSearchPostersWithinPortraitWidth() {
+        val width = ResponsiveLayout.searchPosterWidthDp(392)
+        val actual = width * 2 + 14 + 24
+        val expected = 392
+        assertThat("two posters and gutter fit portrait screen", actual, `is`(expected))
+    }
+
+    @Test
+    fun fitsSearchPostersWithinLandscapeWidth() {
+        val width = ResponsiveLayout.searchPosterWidthDp(800)
+        val actual = width * 4 + 14 * 3 + 24
+        val expected = 798
+        assertThat("four posters and gutters fit landscape screen", actual, `is`(expected))
+    }
+
+    @Test
     fun usesThreeCatalogColumnsOnNormalPhone() {
         val actual = ResponsiveLayout.mobileCatalogColumns(392)
         val expected = 3

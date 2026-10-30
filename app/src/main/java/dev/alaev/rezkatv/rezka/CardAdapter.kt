@@ -16,6 +16,7 @@ class CardAdapter(
     private val progressOf: (Card) -> Int? = { null },
     private val onClick: (Card) -> Unit,
     private val catalogMode: Boolean = false,
+    private val searchMode: Boolean = false,
 ) : RecyclerView.Adapter<CardAdapter.Holder>() {
 
     private val cards = mutableListOf<Card>()
@@ -48,13 +49,25 @@ class CardAdapter(
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_card, parent, false)
         view.clipToOutline = true
         val phone = ResponsiveLayout.isPhone(parent.resources.configuration.smallestScreenWidthDp)
-        if (catalogMode && phone) {
+        if ((catalogMode || searchMode) && phone) {
             val widthDp = parent.resources.configuration.screenWidthDp
             val landscape = parent.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
             val availableDp = widthDp - if (landscape) MOBILE_RAIL_DP else 0
-            val columns = ResponsiveLayout.mobileCatalogColumns(availableDp, landscape)
-            val gapDp = CATALOG_GAP_DP
-            val itemWidthDp = (availableDp - CATALOG_PADDING_DP * 2 - gapDp * (columns - 1)) / columns
+            val columns = if (searchMode) {
+                ResponsiveLayout.searchColumns(widthDp)
+            } else {
+                ResponsiveLayout.mobileCatalogColumns(availableDp, landscape)
+            }
+            val gapDp = if (searchMode) {
+                SEARCH_GAP_DP
+            } else {
+                CATALOG_GAP_DP
+            }
+            val itemWidthDp = if (searchMode) {
+                ResponsiveLayout.searchPosterWidthDp(widthDp)
+            } else {
+                (availableDp - CATALOG_PADDING_DP * 2 - gapDp * (columns - 1)) / columns
+            }
             val density = parent.resources.displayMetrics.density
             val width = (itemWidthDp * density).toInt()
             view.layoutParams = RecyclerView.LayoutParams(width, width * POSTER_HEIGHT_RATIO / POSTER_WIDTH_RATIO)
@@ -91,7 +104,8 @@ class CardAdapter(
     private companion object {
         const val FOCUS_SCALE = 1.08f
         const val PRELOAD_AHEAD = 8
-        const val CATALOG_GAP_DP = 8
+        const val CATALOG_GAP_DP = 12
+        const val SEARCH_GAP_DP = 14
         const val MOBILE_RAIL_DP = 72
         const val CATALOG_PADDING_DP = 12
         const val POSTER_HEIGHT_RATIO = 3

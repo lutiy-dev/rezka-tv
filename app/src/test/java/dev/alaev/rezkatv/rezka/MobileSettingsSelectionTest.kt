@@ -25,4 +25,18 @@ class MobileSettingsSelectionTest {
         val expected = 0
         assertThat("missing value uses the first option", actual, `is`(expected))
     }
+
+    @Test
+    fun keepsLastStoredOptionWhenAvailable() {
+        val expected = 2
+        val actual = MobileSettingsSelection.index(arrayOf("auto", "720p", "1080p"), "1080p")
+        assertThat("previously selected last quality is preserved", actual, `is`(expected))
+    }
+
+    @Test
+    fun treatsEmptyOptionsAsFallbackSelection() {
+        val expected = 0
+        val actual = MobileSettingsSelection.index(emptyArray(), null)
+        assertThat("empty options safely use fallback index", actual, `is`(expected))
+    }
 }

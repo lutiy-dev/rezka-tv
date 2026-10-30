@@ -18,16 +18,26 @@ import dev.alaev.rezkatv.R
 import kotlin.concurrent.thread
 
 class SettingsActivity : FragmentActivity() {
+    private var mobileSettings: MobileSettingsView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val mode = getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
         val isTv = mode.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
         if (!isTv) setTheme(R.style.Theme_RezkaTv_Settings_Mobile)
         super.onCreate(savedInstanceState)
-        if (savedInstanceState == null) {
-            val content = if (isTv) SettingsFragment() else MobilePrefsFragment()
-            supportFragmentManager.beginTransaction().replace(android.R.id.content, content).commit()
+        if (isTv) {
+            if (savedInstanceState == null) {
+                supportFragmentManager.beginTransaction()
+                    .replace(android.R.id.content, SettingsFragment()).commit()
+            }
+        } else {
+            mobileSettings = MobileSettingsView(this).also { setContentView(it.create()) }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        mobileSettings?.refreshAccount()
     }
 
     class SettingsFragment : LeanbackSettingsFragmentCompat() {
@@ -44,18 +54,6 @@ class SettingsActivity : FragmentActivity() {
     }
 
     class PrefsFragment : LeanbackPreferenceFragmentCompat() {
-        override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-            setPreferencesFromResource(R.xml.settings, rootKey)
-            bindPreferences(this)
-        }
-
-        override fun onResume() {
-            super.onResume()
-            updateAccount(this)
-        }
-    }
-
-    class MobilePrefsFragment : PreferenceFragmentCompat() {
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.settings, rootKey)
             bindPreferences(this)

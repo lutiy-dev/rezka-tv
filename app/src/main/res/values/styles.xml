@@ -56,6 +56,13 @@
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.RezkaTv</item>
     </style>
 
+    <style name="Theme.RezkaTv.Settings.Mobile" parent="@style/Theme.Leanback">
+        <item name="android:windowBackground">@color/bg</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:colorAccent">@color/accent</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.RezkaTv</item>
+    </style>
+
     <style name="PreferenceThemeOverlay.RezkaTv" parent="@style/PreferenceThemeOverlayLeanback">
         <item name="android:colorAccent">@color/accent</item>
     </style>

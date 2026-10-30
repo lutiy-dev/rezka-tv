@@ -102,8 +102,8 @@
     <string name="pref_mirror">Зеркало</string>
     <string name="pref_login">Войти</string>
     <string name="pref_logout">Выйти из аккаунта</string>
-    <string name="logged_in">Вход выполнен. Можно войти в другой аккаунт: QR-код для телефона</string>
-    <string name="logged_out">Вход не выполнен. QR-код для телефона или вход на телевизоре</string>
+    <string name="logged_in">Вход выполнен. Можно сменить аккаунт через логин и пароль</string>
+    <string name="logged_out">Вход не выполнен. Введите логин и пароль или используйте QR-код</string>
     <string name="logout_done">Вы вышли из аккаунта</string>
     <string name="open_site">Открыть сайт целиком</string>
     <string name="pref_clear_cache">Очистить кэш</string>
@@ -113,6 +113,10 @@
     <string name="pref_check_updates_summary">Проверить новую версию Rezka TV на GitHub</string>
     <string name="pref_version">Версия</string>
 
+    <string name="login_email_hint">Email или логин</string>
+    <string name="login_password_hint">Пароль</string>
+    <string name="login_submit">Войти</string>
+    <string name="login_fields_required">Введите логин и пароль</string>
     <string name="login_title">Вход в rezka</string>
     <string name="login_instructions">Наведите камеру телефона на код и введите email и пароль на телефоне. Телефон должен быть в той же Wi-Fi сети, что и телевизор.</string>
     <string name="login_or_open">Или откройте в браузере телефона:</string>

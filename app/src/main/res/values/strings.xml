@@ -144,4 +144,5 @@
     <string name="update_download_failed">Не удалось скачать обновление</string>
     <string name="mobile_more">Ещё</string>
     <string name="diagnostics_share">Отправить диагностический лог</string>
+    <string name="hide_keyboard">Скрыть клавиатуру</string>
 </resources>

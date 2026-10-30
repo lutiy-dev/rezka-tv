@@ -170,14 +170,18 @@ class SearchActivity : Activity() {
     private fun onKey(key: String) {
         when (key) {
             SPACE -> if (query.isNotEmpty() && query.last() != ' ') query.append(' ')
+
             BACKSPACE -> if (query.isNotEmpty()) query.setLength(query.length - 1)
+
             CLEAR -> query.setLength(0)
+
             nextLayout().label -> {
                 layout = nextLayout()
                 showKeyboard()
                 keyboard.selectedPosition = layout.letters.length + EDIT_KEYS.size
                 return
             }
+
             else -> query.append(key.lowercase())
         }
         onQueryChanged()

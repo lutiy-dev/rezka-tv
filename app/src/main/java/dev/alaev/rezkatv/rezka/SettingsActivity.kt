@@ -1,5 +1,8 @@
 package dev.alaev.rezkatv.rezka
 
+import android.app.UiModeManager
+import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
 import android.webkit.CookieManager
 import android.widget.Toast
@@ -17,9 +20,13 @@ import kotlin.concurrent.thread
 class SettingsActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val mode = getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        val isTv = mode.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
+        if (!isTv) setTheme(R.style.Theme_RezkaTv_Settings_Mobile)
         super.onCreate(savedInstanceState)
         if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction().replace(android.R.id.content, SettingsFragment()).commit()
+            val content = if (isTv) SettingsFragment() else MobilePrefsFragment()
+            supportFragmentManager.beginTransaction().replace(android.R.id.content, content).commit()
         }
     }
 
@@ -37,48 +44,67 @@ class SettingsActivity : FragmentActivity() {
     }
 
     class PrefsFragment : LeanbackPreferenceFragmentCompat() {
-
         override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
             setPreferencesFromResource(R.xml.settings, rootKey)
-            findPreference<Preference>("version")?.summary = BuildConfig.VERSION_NAME
-            findPreference<Preference>("check_updates")?.setOnPreferenceClickListener {
-                UpdateManager.check(requireActivity(), force = true)
+            bindPreferences(this)
+        }
+
+        override fun onResume() {
+            super.onResume()
+            updateAccount(this)
+        }
+    }
+
+    class MobilePrefsFragment : PreferenceFragmentCompat() {
+        override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+            setPreferencesFromResource(R.xml.settings, rootKey)
+            bindPreferences(this)
+        }
+
+        override fun onResume() {
+            super.onResume()
+            updateAccount(this)
+        }
+    }
+
+    companion object {
+        private fun bindPreferences(fragment: PreferenceFragmentCompat) {
+            fragment.findPreference<Preference>("version")?.summary = BuildConfig.VERSION_NAME
+            fragment.findPreference<Preference>("check_updates")?.setOnPreferenceClickListener {
+                UpdateManager.check(fragment.requireActivity(), force = true)
                 true
             }
-            findPreference<Preference>("open_site")?.setOnPreferenceClickListener {
-                requireActivity().openSite()
+            fragment.findPreference<Preference>("open_site")?.setOnPreferenceClickListener {
+                fragment.requireActivity().openSite()
                 true
             }
-            findPreference<Preference>("clear_cache")?.setOnPreferenceClickListener {
-                val context = requireContext().applicationContext
+            fragment.findPreference<Preference>("clear_cache")?.setOnPreferenceClickListener {
+                val context = fragment.requireContext().applicationContext
                 RezkaClient.get(context).clearCaches()
                 Glide.get(context).clearMemory()
                 thread { Glide.get(context).clearDiskCache() }
                 Toast.makeText(context, R.string.cache_cleared, Toast.LENGTH_SHORT).show()
                 true
             }
-            findPreference<Preference>("login")?.setOnPreferenceClickListener {
-                requireActivity().openLogin()
+            fragment.findPreference<Preference>("login")?.setOnPreferenceClickListener {
+                fragment.requireActivity().openLogin()
                 true
             }
-            findPreference<Preference>("logout")?.setOnPreferenceClickListener {
-                RezkaClient.get(requireContext()).logout()
+            fragment.findPreference<Preference>("logout")?.setOnPreferenceClickListener {
+                RezkaClient.get(fragment.requireContext()).logout()
                 CookieManager.getInstance().removeAllCookies(null)
-                Toast.makeText(requireContext(), R.string.logout_done, Toast.LENGTH_SHORT).show()
-                updateAccount()
+                Toast.makeText(fragment.requireContext(), R.string.logout_done, Toast.LENGTH_SHORT).show()
+                updateAccount(fragment)
                 true
             }
+            updateAccount(fragment)
         }
 
-        override fun onResume() {
-            super.onResume()
-            updateAccount()
-        }
-
-        private fun updateAccount() {
-            val loggedIn = RezkaClient.get(requireContext()).isLoggedIn
-            findPreference<Preference>("login")?.summary = getString(if (loggedIn) R.string.logged_in else R.string.logged_out)
-            findPreference<Preference>("logout")?.isVisible = loggedIn
+        private fun updateAccount(fragment: PreferenceFragmentCompat) {
+            val loggedIn = RezkaClient.get(fragment.requireContext()).isLoggedIn
+            fragment.findPreference<Preference>("login")?.summary =
+                fragment.getString(if (loggedIn) R.string.logged_in else R.string.logged_out)
+            fragment.findPreference<Preference>("logout")?.isVisible = loggedIn
         }
     }
 }

@@ -78,15 +78,17 @@ class ResponsiveLayoutTest {
     @Test
     fun fitsSearchPostersWithinPortraitWidth() {
         val width = ResponsiveLayout.searchPosterWidthDp(392)
+        val actual = width * 2 + 14 + 24
         val expected = 392
-        assertThat("two posters and gutter fit portrait screen", width * 2 + 14 + 24, `is`(expected))
+        assertThat("two posters and gutter fit portrait screen", actual, `is`(expected))
     }
 
     @Test
     fun fitsSearchPostersWithinLandscapeWidth() {
         val width = ResponsiveLayout.searchPosterWidthDp(800)
+        val actual = width * 4 + 14 * 3 + 24
         val expected = 798
-        assertThat("four posters and gutters fit landscape screen", width * 4 + 14 * 3 + 24, `is`(expected))
+        assertThat("four posters and gutters fit landscape screen", actual, `is`(expected))
     }
 
     @Test

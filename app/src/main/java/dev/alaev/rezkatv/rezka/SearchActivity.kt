@@ -100,11 +100,11 @@ class SearchActivity : Activity() {
                 }
             })
             input.setText(savedInstanceState?.getString(STATE_QUERY) ?: intent.getStringExtra(EXTRA_QUERY).orEmpty())
-            input.setSelection(input.text.length)
             configureKeyboardDismiss(input)
-            input.requestFocus()
-            input.post { (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
-                .showSoftInput(input, InputMethodManager.SHOW_IMPLICIT) }
+            input.post {
+                (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                    .showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
+            }
         } else {
             showKeyboard()
             keyboard.requestFocus()

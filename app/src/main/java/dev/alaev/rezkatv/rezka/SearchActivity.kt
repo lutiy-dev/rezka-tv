@@ -2,6 +2,7 @@ package dev.alaev.rezkatv.rezka
 
 import android.app.Activity
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
@@ -11,12 +12,11 @@ import android.text.TextWatcher
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
-import android.content.Context
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.GridLayoutManager
 import android.widget.EditText
 import android.widget.TextView
 import androidx.leanback.widget.VerticalGridView
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import dev.alaev.rezkatv.R
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
@@ -61,9 +61,14 @@ class SearchActivity : Activity() {
         results = CardAdapter(onClick = { openDetails(it) }, searchMode = phoneMode)
         findViewById<RecyclerView>(R.id.results).apply {
             if (phoneMode) {
-                layoutManager = GridLayoutManager(this@SearchActivity, ResponsiveLayout.searchColumns(resources.configuration.screenWidthDp))
+                layoutManager = GridLayoutManager(
+                    this@SearchActivity,
+                    ResponsiveLayout.searchColumns(resources.configuration.screenWidthDp),
+                )
             } else {
-                (this as VerticalGridView).setNumColumns(ResponsiveLayout.searchColumns(resources.configuration.screenWidthDp))
+                (this as VerticalGridView).setNumColumns(
+                    ResponsiveLayout.searchColumns(resources.configuration.screenWidthDp),
+                )
             }
             val spacing = resources.getDimensionPixelSize(R.dimen.card_spacing)
             horizontalSpacing = spacing
@@ -134,7 +139,8 @@ class SearchActivity : Activity() {
         super.onConfigurationChanged(newConfig)
         val grid = findViewById<RecyclerView>(R.id.results)
         if (phoneMode) {
-            (grid.layoutManager as? GridLayoutManager)?.spanCount = ResponsiveLayout.searchColumns(newConfig.screenWidthDp)
+            (grid.layoutManager as? GridLayoutManager)?.spanCount =
+                ResponsiveLayout.searchColumns(newConfig.screenWidthDp)
         } else {
             (grid as VerticalGridView).setNumColumns(ResponsiveLayout.searchColumns(newConfig.screenWidthDp))
         }

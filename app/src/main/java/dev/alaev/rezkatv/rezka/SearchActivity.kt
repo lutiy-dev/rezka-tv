@@ -1,6 +1,9 @@
 package dev.alaev.rezkatv.rezka
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.speech.RecognizerIntent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.text.Editable
@@ -74,6 +77,17 @@ class SearchActivity : Activity() {
             })
             input.setText(savedInstanceState?.getString(STATE_QUERY) ?: intent.getStringExtra(EXTRA_QUERY).orEmpty())
             input.setSelection(input.text.length)
+            findViewById<View>(R.id.voice_search).setOnClickListener {
+                try {
+                    val speech = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                        putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                        putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ru-RU")
+                    }
+                    startActivityForResult(speech, VOICE_REQUEST)
+                } catch (_: ActivityNotFoundException) {
+                    showEmpty(R.string.voice_search_unavailable)
+                }
+            }
             input.requestFocus()
             window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
         } else {
@@ -83,6 +97,15 @@ class SearchActivity : Activity() {
                 query.append(it.lowercase())
                 onQueryChanged()
             }
+        }
+    }
+
+    @Deprecated("Android speech recognition activity result")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == VOICE_REQUEST && resultCode == RESULT_OK) {
+            val spoken = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
+            if (!spoken.isNullOrBlank()) (queryView as? EditText)?.setText(spoken)
         }
     }
 
@@ -165,5 +188,6 @@ class SearchActivity : Activity() {
         private const val TYPING_PAUSE_MS = 600L
         private const val MOBILE_TYPING_PAUSE_MS = 400L
         private const val STATE_QUERY = "query_state"
+        private const val VOICE_REQUEST = 1001
     }
 }

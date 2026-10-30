@@ -3,9 +3,9 @@ package dev.alaev.rezkatv.rezka
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.speech.RecognizerIntent
 import android.content.res.Configuration
 import android.os.Bundle
+import android.speech.RecognizerIntent
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View

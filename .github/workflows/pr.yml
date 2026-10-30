@@ -34,10 +34,13 @@ jobs:
       - name: Build QA APK
         if: github.head_ref == 'test/1.2.0-qa-apk' || github.head_ref == 'test/1.2.0-playback-baseline' || github.head_ref == 'test/1.2.0-voice-search' || github.head_ref == 'test/1.2.1-google-tv-search' || github.head_ref == 'test/1.2.2-mobile-search-grid'
         run: ./gradlew assembleDebug
+        env:
+          REZKA_VERSION_NAME: "1.2.2"
+          REZKA_VERSION_CODE: "4"
       - name: Upload QA APK
         if: github.head_ref == 'test/1.2.0-qa-apk' || github.head_ref == 'test/1.2.0-playback-baseline' || github.head_ref == 'test/1.2.0-voice-search' || github.head_ref == 'test/1.2.1-google-tv-search' || github.head_ref == 'test/1.2.2-mobile-search-grid'
         uses: actions/upload-artifact@v7
         with:
-          name: Rezka-TV-1.2.0-${{ github.head_ref == 'test/1.2.0-playback-baseline' && 'Playback-Baseline' || 'QA' }}
+          name: Rezka-TV-1.2.2-QA
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error

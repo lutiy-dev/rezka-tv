@@ -120,8 +120,8 @@ internal class MobileSettingsView(private val activity: Activity) {
         val summary = label("", 13f, muted)
         val item = row(group, activity.getString(title), summary)
         fun update() {
-            val index = values.indexOf(prefs.getString(key, default))
-            summary.text = (titles.getOrNull(index) ?: titles.firstOrNull().orEmpty()) + "  ›"
+            val index = values.indexOf(prefs.getString(key, default)).coerceAtLeast(0)
+            summary.text = titles.getOrNull(index).orEmpty() + "  ›"
         }
         update()
         item.setOnClickListener {

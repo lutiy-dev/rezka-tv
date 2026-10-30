@@ -56,7 +56,11 @@ class CardAdapter(
             val columns = if (searchMode) ResponsiveLayout.searchColumns(widthDp) else {
                 ResponsiveLayout.mobileCatalogColumns(availableDp, landscape)
             }
-            val gapDp = if (searchMode) SEARCH_GAP_DP else CATALOG_GAP_DP
+            val gapDp = if (searchMode) {
+                SEARCH_GAP_DP
+            } else {
+                CATALOG_GAP_DP
+            }
             val itemWidthDp = if (searchMode) {
                 ResponsiveLayout.searchPosterWidthDp(widthDp)
             } else {

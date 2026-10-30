@@ -94,7 +94,7 @@ class SearchActivity : Activity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == VOICE_REQUEST && resultCode == RESULT_OK) {
-            val spoken = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
+            val spoken = VoiceSearchQuery.first(data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS))
             if (!spoken.isNullOrBlank()) {
                 if (phoneMode) {
                     (queryView as EditText).setText(spoken)
@@ -200,4 +200,8 @@ class SearchActivity : Activity() {
         private const val STATE_QUERY = "query_state"
         private const val VOICE_REQUEST = 1001
     }
+}
+
+internal object VoiceSearchQuery {
+    fun first(results: ArrayList<String>?): String? = results?.firstOrNull()?.takeIf { it.isNotBlank() }
 }

@@ -120,7 +120,7 @@
     <string name="login_submit">Войти</string>
     <string name="login_fields_required">Введите логин и пароль</string>
     <string name="login_title">Вход в rezka</string>
-    <string name="login_instructions">Наведите камеру телефона на код и введите email и пароль на телефоне. Телефон должен быть в той же Wi-Fi сети, что и телевизор.</string>
+    <string name="login_instructions">Введите логин и пароль здесь. QR-код — дополнительный способ входа через телефон в той же Wi-Fi сети.</string>
     <string name="login_or_open">Или откройте в браузере телефона:</string>
     <string name="login_qr_description">QR-код для входа с телефона</string>
     <string name="login_on_tv">Войти на телевизоре</string>

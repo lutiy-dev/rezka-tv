@@ -20,10 +20,6 @@ import dev.alaev.rezkatv.BuildConfig
 import dev.alaev.rezkatv.R
 import kotlin.concurrent.thread
 
-/**
- * Phone-only settings surface. Preference keys, defaults and TV settings.xml stay unchanged.
- * Uses Android Views to avoid adding another UI framework.
- */
 internal class MobileSettingsView(private val activity: Activity) {
     private val prefs = PreferenceManager.getDefaultSharedPreferences(activity)
     private val background = Color.rgb(16, 19, 24)

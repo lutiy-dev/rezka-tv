@@ -49,72 +49,106 @@ class MobileNavigation(
 
     private fun showMore() {
         val context = bar.context
-        val density = context.resources.displayMetrics.density
-        fun dp(value: Int) = (value * density + 0.5f).toInt()
-        val accent = context.getColor(R.color.accent)
-        val surface = Color.rgb(32, 37, 45)
-        val container = LinearLayout(context).apply {
+        val content = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(18), dp(16), dp(14))
+            setPadding(
+                dp(MENU_HORIZONTAL_PADDING),
+                dp(MENU_VERTICAL_PADDING),
+                dp(MENU_HORIZONTAL_PADDING),
+                dp(MENU_VERTICAL_PADDING),
+            )
             background = GradientDrawable().apply {
-                setColor(surface)
-                cornerRadius = dp(16).toFloat()
+                setColor(Color.parseColor(MENU_SURFACE))
+                cornerRadius = dp(MENU_CORNER_RADIUS).toFloat()
             }
         }
-        container.addView(TextView(context).apply {
-            text = context.getString(R.string.mobile_more)
-            textSize = 20f
-            setTextColor(accent)
+        content.addView(TextView(context).apply {
+            setText(R.string.mobile_more)
+            textSize = MENU_TITLE_SIZE
+            setTextColor(context.getColor(R.color.accent))
             setTypeface(null, Typeface.BOLD)
-            setPadding(dp(12), 0, dp(12), dp(12))
+            setPadding(dp(MENU_ITEM_PADDING), 0, 0, dp(MENU_ITEM_PADDING))
         })
-        val dialog = AlertDialog.Builder(context).setView(ScrollView(context).apply {
-            isFillViewport = false
-            addView(container)
-        }).create()
+        val scroll = ScrollView(context).apply { addView(content) }
+        val dialog = AlertDialog.Builder(context).setView(scroll).create()
         secondary.forEachIndexed { index, section ->
-            val item = LinearLayout(context).apply {
-                gravity = Gravity.CENTER_VERTICAL
-                orientation = LinearLayout.HORIZONTAL
-                minimumHeight = dp(56)
-                setPadding(dp(12), dp(4), dp(12), dp(4))
-                isClickable = true
-                isFocusable = true
-                contentDescription = context.getString(section.label)
-                setOnClickListener {
-                    dialog.dismiss()
-                    select(section)
-                }
-            }
-            item.addView(ImageView(context).apply {
-                setImageResource(section.icon)
-                imageTintList = ColorStateList.valueOf(accent)
-                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-            }, LinearLayout.LayoutParams(dp(24), dp(24)))
-            item.addView(TextView(context).apply {
-                setText(section.label)
-                textSize = 16f
-                setTextColor(Color.WHITE)
-                gravity = Gravity.CENTER_VERTICAL
-            }, LinearLayout.LayoutParams(0, -2, 1f).apply {
-                marginStart = dp(16)
+            content.addView(menuRow(section) {
+                dialog.dismiss()
+                select(section)
             })
-            container.addView(item, LinearLayout.LayoutParams(-1, -2))
-            if (index < secondary.lastIndex) {
-                container.addView(View(context).apply {
-                    setBackgroundColor(Color.rgb(53, 59, 68))
-                }, LinearLayout.LayoutParams(-1, dp(1)))
-            }
+            if (index != secondary.lastIndex) content.addView(menuDivider())
         }
         dialog.setCanceledOnTouchOutside(true)
         dialog.show()
-        val screenWidth = context.resources.displayMetrics.widthPixels
         dialog.window?.apply {
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            setLayout(minOf(screenWidth - dp(36), dp(440)), -2)
-            addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
-            setDimAmount(0.65f)
+            setLayout(
+                minOf(context.resources.displayMetrics.widthPixels - dp(MENU_SCREEN_MARGIN), dp(MENU_MAX_WIDTH)),
+                android.view.WindowManager.LayoutParams.WRAP_CONTENT,
+            )
+            setDimAmount(MENU_DIM_AMOUNT)
         }
+    }
+
+    private fun menuRow(section: Section, onClick: () -> Unit): LinearLayout {
+        val context = bar.context
+        val row = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            minimumHeight = dp(MENU_ROW_HEIGHT)
+            setPadding(dp(MENU_ITEM_PADDING), 0, dp(MENU_ITEM_PADDING), 0)
+            isClickable = true
+            isFocusable = true
+            contentDescription = context.getString(section.label)
+            setOnClickListener { onClick() }
+        }
+        row.addView(
+            ImageView(context).apply {
+                setImageResource(section.icon)
+                imageTintList = ColorStateList.valueOf(context.getColor(R.color.accent))
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            },
+            LinearLayout.LayoutParams(dp(MENU_ICON_SIZE), dp(MENU_ICON_SIZE)),
+        )
+        row.addView(
+            TextView(context).apply {
+                setText(section.label)
+                textSize = MENU_ITEM_SIZE
+                setTextColor(Color.WHITE)
+            },
+            LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginStart = dp(MENU_ITEM_GAP)
+            },
+        )
+        return row
+    }
+
+    private fun menuDivider() = View(bar.context).apply {
+        setBackgroundColor(Color.parseColor(MENU_DIVIDER))
+        layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            dp(MENU_DIVIDER_HEIGHT),
+        )
+    }
+
+    private fun dp(value: Int) = (value * bar.resources.displayMetrics.density).toInt()
+
+    private companion object {
+        const val MENU_SURFACE = "#20252D"
+        const val MENU_DIVIDER = "#353B44"
+        const val MENU_HORIZONTAL_PADDING = 16
+        const val MENU_VERTICAL_PADDING = 14
+        const val MENU_CORNER_RADIUS = 16
+        const val MENU_ITEM_PADDING = 12
+        const val MENU_ROW_HEIGHT = 56
+        const val MENU_ICON_SIZE = 24
+        const val MENU_ITEM_GAP = 16
+        const val MENU_DIVIDER_HEIGHT = 1
+        const val MENU_SCREEN_MARGIN = 36
+        const val MENU_MAX_WIDTH = 440
+        const val MENU_TITLE_SIZE = 20f
+        const val MENU_ITEM_SIZE = 16f
+        const val MENU_DIM_AMOUNT = 0.65f
     }
 
     private fun addButton(label: Int, icon: Int, action: () -> Unit): TextView {

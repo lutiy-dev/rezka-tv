@@ -26,7 +26,6 @@
 
         <activity
             android:name=".rezka.DetailsActivity"
-            android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|uiMode"
             android:exported="false" />
 
         <activity

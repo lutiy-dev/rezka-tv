@@ -125,7 +125,7 @@ internal class MobileSettingsView(private val activity: Activity) {
         }
         update()
         item.setOnClickListener {
-            val selected = values.indexOf(prefs.getString(key, default)).coerceAtLeast(0)
+            val selected = MobileSettingsSelection.index(values, prefs.getString(key, default))
             AlertDialog.Builder(activity)
                 .setTitle(title)
                 .setSingleChoiceItems(titles, selected) { dialog, index ->

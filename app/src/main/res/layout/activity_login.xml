@@ -11,7 +11,7 @@
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="40dp"
+        android:layout_marginEnd="24dp"
         android:layout_weight="1"
         android:orientation="vertical">
 
@@ -24,6 +24,32 @@
             android:layout_marginTop="14dp"
             android:text="@string/login_instructions"
             android:textSize="17sp" />
+
+        <EditText
+            android:id="@+id/login_email"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="18dp"
+            android:hint="@string/login_email_hint"
+            android:inputType="textEmailAddress"
+            android:autofillHints="username"
+            android:singleLine="true"
+            android:textColor="@color/text" />
+
+        <EditText
+            android:id="@+id/login_password"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:hint="@string/login_password_hint"
+            android:inputType="textPassword"
+            android:autofillHints="password"
+            android:singleLine="true"
+            android:textColor="@color/text" />
+
+        <TextView
+            android:id="@+id/login_submit"
+            style="@style/ActionButton"
+            android:text="@string/login_submit" />
 
         <TextView
             style="@style/Meta"

@@ -64,6 +64,7 @@ class SearchActivity : Activity() {
             adapter = results
         }
 
+        findViewById<View>(R.id.voice_search).setOnClickListener { launchVoiceSearch() }
         if (phoneMode) {
             val input = queryView as EditText
             input.addTextChangedListener(object : TextWatcher {
@@ -77,17 +78,6 @@ class SearchActivity : Activity() {
             })
             input.setText(savedInstanceState?.getString(STATE_QUERY) ?: intent.getStringExtra(EXTRA_QUERY).orEmpty())
             input.setSelection(input.text.length)
-            findViewById<View>(R.id.voice_search).setOnClickListener {
-                try {
-                    val speech = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                        putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                        putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ru-RU")
-                    }
-                    startActivityForResult(speech, VOICE_REQUEST)
-                } catch (_: ActivityNotFoundException) {
-                    showEmpty(R.string.voice_search_unavailable)
-                }
-            }
             input.requestFocus()
             window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
         } else {
@@ -105,7 +95,15 @@ class SearchActivity : Activity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == VOICE_REQUEST && resultCode == RESULT_OK) {
             val spoken = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
-            if (!spoken.isNullOrBlank()) (queryView as? EditText)?.setText(spoken)
+            if (!spoken.isNullOrBlank()) {
+                if (phoneMode) {
+                    (queryView as EditText).setText(spoken)
+                } else {
+                    query.clear()
+                    query.append(spoken)
+                    onQueryChanged()
+                }
+            }
         }
     }
 
@@ -123,6 +121,18 @@ class SearchActivity : Activity() {
     override fun onDestroy() {
         scope.cancel()
         super.onDestroy()
+    }
+
+    private fun launchVoiceSearch() {
+        try {
+            val speech = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ru-RU")
+            }
+            startActivityForResult(speech, VOICE_REQUEST)
+        } catch (_: ActivityNotFoundException) {
+            showEmpty(R.string.voice_search_unavailable)
+        }
     }
 
     private fun showKeyboard() {

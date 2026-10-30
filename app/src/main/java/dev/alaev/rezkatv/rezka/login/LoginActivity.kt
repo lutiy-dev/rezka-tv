@@ -11,11 +11,11 @@ import android.widget.TextView
 import dev.alaev.rezkatv.R
 import dev.alaev.rezkatv.rezka.RezkaClient
 import dev.alaev.rezkatv.rezka.openSite
-import java.io.IOException
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.IOException
 
 class LoginActivity : Activity() {
 

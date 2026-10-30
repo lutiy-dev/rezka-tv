@@ -22,5 +22,9 @@ object ResponsiveLayout {
     }
     fun gridColumns(widthDp: Int) = if (isCompact(widthDp)) PHONE_GRID_COLUMNS else TV_GRID_COLUMNS
     fun searchColumns(widthDp: Int) = if (isCompact(widthDp)) PHONE_SEARCH_COLUMNS else TV_SEARCH_COLUMNS
+    fun searchPosterWidthDp(widthDp: Int): Int {
+        val columns = searchColumns(widthDp)
+        return ((widthDp - 24 - 14 * (columns - 1)) / columns).coerceAtLeast(1)
+    }
     fun useEdgeAwareRows(widthDp: Int) = isCompact(widthDp)
 }

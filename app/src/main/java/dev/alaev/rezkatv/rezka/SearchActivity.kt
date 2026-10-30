@@ -54,7 +54,7 @@ class SearchActivity : Activity() {
             keyboard.itemAnimator = null
         }
 
-        results = CardAdapter(onClick = { openDetails(it) })
+        results = CardAdapter(onClick = { openDetails(it) }, searchMode = phoneMode)
         findViewById<VerticalGridView>(R.id.results).apply {
             setNumColumns(ResponsiveLayout.searchColumns(resources.configuration.screenWidthDp))
             val spacing = resources.getDimensionPixelSize(R.dimen.card_spacing)

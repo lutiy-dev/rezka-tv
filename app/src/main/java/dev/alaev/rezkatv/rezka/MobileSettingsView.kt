@@ -23,7 +23,7 @@ internal class MobileSettingsView(activity: Activity) : MobileSettingsPanel(acti
 
     fun create(): View {
         val scroll = ScrollView(activity).apply {
-            setBackgroundColor(background)
+            setBackgroundColor(this@MobileSettingsView.background)
             isFillViewport = true
             clipToPadding = false
         }

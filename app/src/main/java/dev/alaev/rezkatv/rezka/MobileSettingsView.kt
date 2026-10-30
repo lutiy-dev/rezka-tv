@@ -4,11 +4,11 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.res.ColorStateList
 import android.view.View
+import android.webkit.CookieManager
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.Switch
 import android.widget.TextView
-import android.webkit.CookieManager
 import android.widget.Toast
 import androidx.preference.PreferenceManager
 import com.bumptech.glide.Glide
@@ -16,6 +16,7 @@ import dev.alaev.rezkatv.BuildConfig
 import dev.alaev.rezkatv.R
 import kotlin.concurrent.thread
 
+@Suppress("LongMethod", "MagicNumber")
 internal class MobileSettingsView(activity: Activity) : MobileSettingsPanel(activity) {
     private val prefs = PreferenceManager.getDefaultSharedPreferences(activity)
     private lateinit var accountStatus: TextView
@@ -39,9 +40,11 @@ internal class MobileSettingsView(activity: Activity) : MobileSettingsPanel(acti
             setOnClickListener { activity.finish() }
         }
         root.addView(back)
-        root.addView(label("REZKA TV · МОБИЛЬНОЕ ПРИЛОЖЕНИЕ", 11f, muted).apply {
-            setPadding(0, 0, 0, dp(22))
-        })
+        root.addView(
+            label("REZKA TV · МОБИЛЬНОЕ ПРИЛОЖЕНИЕ", 11f, muted).apply {
+                setPadding(0, 0, 0, dp(22))
+            },
+        )
 
         val account = panel(root)
         accountStatus = label("", 12f, accent)
@@ -104,7 +107,12 @@ internal class MobileSettingsView(activity: Activity) : MobileSettingsPanel(acti
     }
 
     private fun choice(
-        group: LinearLayout, title: Int, key: String, default: String, titlesId: Int, valuesId: Int,
+        group: LinearLayout,
+        title: Int,
+        key: String,
+        default: String,
+        titlesId: Int,
+        valuesId: Int,
     ) {
         val titles = activity.resources.getStringArray(titlesId)
         val values = activity.resources.getStringArray(valuesId)
@@ -139,5 +147,4 @@ internal class MobileSettingsView(activity: Activity) : MobileSettingsPanel(acti
         val item = row(group, activity.getString(title), control, activity.getString(detail))
         item.setOnClickListener { control.isChecked = !control.isChecked }
     }
-
 }

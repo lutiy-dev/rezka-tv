@@ -103,10 +103,8 @@ class SearchActivity : Activity() {
             input.setSelection(input.text.length)
             configureKeyboardDismiss(input)
             input.requestFocus()
-            input.post {
-                (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
-                    .showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
-            }
+            input.post { (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                .showSoftInput(input, InputMethodManager.SHOW_IMPLICIT) }
         } else {
             showKeyboard()
             keyboard.requestFocus()

@@ -64,7 +64,17 @@ class SearchActivity : Activity() {
             adapter = results
         }
 
-        findViewById<View>(R.id.voice_search).setOnClickListener { launchVoiceSearch() }
+        findViewById<View>(R.id.voice_search).setOnClickListener {
+            try {
+                val speech = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                    putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                    putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ru-RU")
+                }
+                startActivityForResult(speech, VOICE_REQUEST)
+            } catch (_: ActivityNotFoundException) {
+                showEmpty(R.string.voice_search_unavailable)
+            }
+        }
         if (phoneMode) {
             val input = queryView as EditText
             input.addTextChangedListener(object : TextWatcher {
@@ -121,18 +131,6 @@ class SearchActivity : Activity() {
     override fun onDestroy() {
         scope.cancel()
         super.onDestroy()
-    }
-
-    private fun launchVoiceSearch() {
-        try {
-            val speech = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ru-RU")
-            }
-            startActivityForResult(speech, VOICE_REQUEST)
-        } catch (_: ActivityNotFoundException) {
-            showEmpty(R.string.voice_search_unavailable)
-        }
     }
 
     private fun showKeyboard() {

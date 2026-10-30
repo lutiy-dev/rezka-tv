@@ -5,14 +5,9 @@
     android:orientation="vertical"
     android:paddingHorizontal="12dp">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
     <EditText
         android:id="@+id/query"
-        android:layout_width="0dp"
-        android:layout_weight="1"
+        android:layout_width="match_parent"
         android:layout_height="52dp"
         android:layout_marginTop="8dp"
         android:background="@drawable/query_bg"
@@ -25,14 +20,6 @@
         android:textColor="@color/text"
         android:textColorHint="@color/text_dim"
         android:textSize="18sp" />
-    <TextView
-        android:id="@+id/voice_search"
-        style="@style/ActionButton"
-        android:layout_width="wrap_content"
-        android:layout_height="52dp"
-        android:contentDescription="@string/voice_search"
-        android:text="@string/voice_search" />
-    </LinearLayout>
 
     <FrameLayout
         android:layout_width="match_parent"

@@ -10,6 +10,10 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
+import android.content.Context
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.GridLayoutManager
 import android.widget.EditText
 import android.widget.TextView
 import androidx.leanback.widget.VerticalGridView
@@ -55,8 +59,12 @@ class SearchActivity : Activity() {
         }
 
         results = CardAdapter(onClick = { openDetails(it) }, searchMode = phoneMode)
-        findViewById<VerticalGridView>(R.id.results).apply {
-            setNumColumns(ResponsiveLayout.searchColumns(resources.configuration.screenWidthDp))
+        findViewById<RecyclerView>(R.id.results).apply {
+            if (phoneMode) {
+                layoutManager = GridLayoutManager(this@SearchActivity, ResponsiveLayout.searchColumns(resources.configuration.screenWidthDp))
+            } else {
+                (this as VerticalGridView).setNumColumns(ResponsiveLayout.searchColumns(resources.configuration.screenWidthDp))
+            }
             val spacing = resources.getDimensionPixelSize(R.dimen.card_spacing)
             horizontalSpacing = spacing
             verticalSpacing = spacing
@@ -89,6 +97,11 @@ class SearchActivity : Activity() {
             input.setText(savedInstanceState?.getString(STATE_QUERY) ?: intent.getStringExtra(EXTRA_QUERY).orEmpty())
             input.setSelection(input.text.length)
             input.requestFocus()
+            findViewById<View>(R.id.hide_keyboard).setOnClickListener {
+                (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                    .hideSoftInputFromWindow(input.windowToken, 0)
+                input.clearFocus()
+            }
             window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
         } else {
             showKeyboard()
@@ -119,8 +132,12 @@ class SearchActivity : Activity() {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        findViewById<VerticalGridView>(R.id.results)
-            .setNumColumns(ResponsiveLayout.searchColumns(newConfig.screenWidthDp))
+        val grid = findViewById<RecyclerView>(R.id.results)
+        if (phoneMode) {
+            (grid.layoutManager as? GridLayoutManager)?.spanCount = ResponsiveLayout.searchColumns(newConfig.screenWidthDp)
+        } else {
+            (grid as VerticalGridView).setNumColumns(ResponsiveLayout.searchColumns(newConfig.screenWidthDp))
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

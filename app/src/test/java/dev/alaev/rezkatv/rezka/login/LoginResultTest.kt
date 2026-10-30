@@ -41,4 +41,18 @@ class LoginResultTest {
         val json = """{"success":false}"""
         assertThat("отказ без сообщения", LoginResult.parse(json), equalTo(expected))
     }
+
+    @Test
+    fun rejectsBlankErrorMessageWithDefault() {
+        val actual = LoginResult.parse("""{"success":false,"message":"   "}""")
+        val expected = LoginResult(false, LoginResult.DEFAULT_ERROR)
+        assertThat("blank login errors fall back to a useful message", actual, equalTo(expected))
+    }
+
+    @Test
+    fun ignoresUntrustedHtmlInLoginFailure() {
+        val actual = LoginResult.parse("""{"success":false,"message":"<script>error</script> Wrong password"}""")
+        val expected = LoginResult(false, "error Wrong password")
+        assertThat("HTML tags are stripped from login feedback", actual, equalTo(expected))
+    }
 }

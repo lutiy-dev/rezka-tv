@@ -38,6 +38,16 @@
             android:textColorHint="@color/text_dim"
             android:textSize="20sp" />
 
+        <TextView
+            android:id="@+id/voice_search"
+            style="@style/ActionButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:contentDescription="@string/voice_search"
+            android:focusable="true"
+            android:text="@string/voice_search" />
+
         <androidx.leanback.widget.VerticalGridView
             android:id="@+id/keyboard"
             android:layout_width="match_parent"

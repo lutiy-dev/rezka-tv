@@ -124,6 +124,8 @@ class PlayerActivity : FragmentActivity() {
     private var startJob: Job? = null
     private var preparing = false
     private var refreshedAfterError = false
+    private var bufferingSinceMs = 0L
+    private var lastBufferingReportMs = 0L
     private var stopped = false
     private var requestedPosition = RESUME
     private var autoplay = true
@@ -387,10 +389,11 @@ class PlayerActivity : FragmentActivity() {
         val q = quality ?: return
         val s = streams ?: return
         urlIndex = index
+        bufferingSinceMs = SystemClock.elapsedRealtime()
         val url = q.urls[index]
         val item = MediaItem.Builder()
             .setUri(url)
-            .setMimeType(if (url.endsWith(".m3u8")) MimeTypes.APPLICATION_M3U8 else null)
+            .setMimeType(if (StreamSource.isHls(url)) MimeTypes.APPLICATION_M3U8 else null)
             .setSubtitleConfigurations(s.subtitles.map {
                 MediaItem.SubtitleConfiguration.Builder(Uri.parse(it.url))
                     .setMimeType(MimeTypes.TEXT_VTT)
@@ -401,7 +404,7 @@ class PlayerActivity : FragmentActivity() {
             })
             .build()
         Log.i(TAG, "play ${episode?.code ?: "film"} ${q.label} #$index")
-        val streamType = if (url.substringBefore('?').endsWith(".m3u8")) "hls" else "other"
+        val streamType = if (StreamSource.isHls(url)) "hls" else "other"
         recordDiagnostic("prepare quality=${q.label} mirror=$index type=$streamType")
         player.setMediaItem(item, positionMs)
         player.prepare()
@@ -463,6 +466,8 @@ class PlayerActivity : FragmentActivity() {
     private inner class PlayerListener : Player.Listener {
         override fun onPlaybackStateChanged(state: Int) {
             recordDiagnostic("state=$state buffered=${player.bufferedPosition}ms")
+            bufferingSinceMs = if (state == Player.STATE_BUFFERING) SystemClock.elapsedRealtime() else 0L
+            lastBufferingReportMs = 0L
             when (state) {
                 Player.STATE_READY -> {
                     preparing = false
@@ -779,6 +784,8 @@ class PlayerActivity : FragmentActivity() {
     }
 
     private fun onTick() {
+        val now = SystemClock.elapsedRealtime()
+        checkStalledBuffer(now)
         if (player.isPlaying) {
             val now = SystemClock.elapsedRealtime()
             if (now - lastLocalSave >= LOCAL_SAVE_MS) saveProgress(toServer = false)
@@ -786,6 +793,15 @@ class PlayerActivity : FragmentActivity() {
             if (firstSave || (serverSaved && now - lastServerSave >= SERVER_SAVE_MS)) saveProgress(toServer = true)
         }
         updateNextUp()
+    }
+
+    private fun checkStalledBuffer(now: Long) {
+        val waitingTooLong = bufferingSinceMs > 0 && now - bufferingSinceMs >= BUFFERING_REPORT_MS
+        val reportDue = lastBufferingReportMs == 0L || now - lastBufferingReportMs >= BUFFERING_REPORT_MS
+        if (waitingTooLong && reportDue) {
+            recordDiagnostic("buffering wait=${now - bufferingSinceMs}ms buffered=${player.bufferedPosition}ms")
+            lastBufferingReportMs = now
+        }
     }
 
     private fun updateNextUp() {
@@ -980,6 +996,7 @@ class PlayerActivity : FragmentActivity() {
         private const val NEXT_UP_HYSTERESIS_MS = 5_000L
         private const val NEXT_UP_COUNTDOWN_MS = 10_000L
         private const val HTTP_TIMEOUT_MS = 15_000
+        private const val BUFFERING_REPORT_MS = 10_000L
         private const val BUFFER_BYTES = 48 * 1024 * 1024
         private const val SUBTITLES_ABOVE_CONTROLS = 0.34f
         private const val SUBTITLES_BOTTOM = 0.1f

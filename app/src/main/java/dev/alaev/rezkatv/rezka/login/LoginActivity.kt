@@ -5,15 +5,17 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
+import dev.alaev.rezkatv.R
+import dev.alaev.rezkatv.rezka.RezkaClient
+import dev.alaev.rezkatv.rezka.openSite
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import dev.alaev.rezkatv.R
-import dev.alaev.rezkatv.rezka.RezkaClient
-import dev.alaev.rezkatv.rezka.openSite
+import java.io.IOException
 
 class LoginActivity : Activity() {
 
@@ -24,6 +26,10 @@ class LoginActivity : Activity() {
     private lateinit var qrCard: View
     private lateinit var url: TextView
     private lateinit var status: TextView
+    private lateinit var email: EditText
+    private lateinit var password: EditText
+    private lateinit var submit: View
+    private var checking = false
 
     private var server: LoginServer? = null
     private var siteOpened = false
@@ -41,6 +47,10 @@ class LoginActivity : Activity() {
         qrCard = findViewById(R.id.qr_card)
         url = findViewById(R.id.login_url)
         status = findViewById(R.id.login_status)
+        email = findViewById(R.id.login_email)
+        password = findViewById(R.id.login_password)
+        submit = findViewById(R.id.login_submit)
+        submit.setOnClickListener { loginDirectly() }
         findViewById<View>(R.id.login_on_tv).setOnClickListener {
             siteOpened = true
             openSite()
@@ -59,6 +69,40 @@ class LoginActivity : Activity() {
         handler.removeCallbacksAndMessages(null)
         scope.cancel()
         super.onDestroy()
+    }
+
+    private fun loginDirectly() {
+        val username = email.text.toString().trim()
+        val secret = password.text.toString()
+        if (checking || username.isBlank() || secret.isBlank()) {
+            if (!checking) showStatus(R.string.login_fields_required, error = true)
+            return
+        }
+        checking = true
+        submit.isEnabled = false
+        showStatus(R.string.login_status_checking)
+        scope.launch {
+            val result = withContext(RezkaClient.io) {
+                try {
+                    client.login(username, secret)
+                } catch (_: IOException) {
+                    LoginResult(false, getString(R.string.load_failed))
+                }
+            }
+            checking = false
+            submit.isEnabled = true
+            if (result.success) {
+                password.text.clear()
+                stopServer()
+                handler.removeCallbacks(expire)
+                showStatus(R.string.login_status_done)
+                client.exportCookiesToWebView()
+                setResult(RESULT_OK)
+                handler.postDelayed({ finish() }, DONE_DELAY_MS)
+            } else {
+                showStatus(result.message, error = true)
+            }
+        }
     }
 
     private fun startCode() {

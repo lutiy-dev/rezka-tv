@@ -62,10 +62,54 @@ class ResponsiveLayoutTest {
     }
 
     @Test
+    fun usesTwoSearchColumnsOnPortraitPhone() {
+        val actual = ResponsiveLayout.searchColumns(392)
+        val expected = 2
+        assertThat("portrait search grid", actual, `is`(expected))
+    }
+
+    @Test
+    fun usesFourSearchColumnsOnLandscapePhone() {
+        val actual = ResponsiveLayout.searchColumns(800)
+        val expected = 4
+        assertThat("landscape search grid", actual, `is`(expected))
+    }
+
+    @Test
+    fun keepsSearchGridTwoColumnsOnNarrowPhone() {
+        val actual = ResponsiveLayout.searchColumns(320)
+        val expected = 2
+        assertThat("narrow phone search columns", actual, `is`(expected))
+    }
+
+    @Test
+    fun fitsSearchPostersWithinPortraitWidth() {
+        val width = ResponsiveLayout.searchPosterWidthDp(392)
+        val actual = width * 2 + 14 + 24
+        val expected = 392
+        assertThat("two posters and gutter fit portrait screen", actual, `is`(expected))
+    }
+
+    @Test
+    fun fitsSearchPostersWithinLandscapeWidth() {
+        val width = ResponsiveLayout.searchPosterWidthDp(800)
+        val actual = width * 4 + 14 * 3 + 24
+        val expected = 798
+        assertThat("four posters and gutters fit landscape screen", actual, `is`(expected))
+    }
+
+    @Test
     fun usesThreeCatalogColumnsOnNormalPhone() {
         val actual = ResponsiveLayout.mobileCatalogColumns(392)
         val expected = 3
         assertThat("normal width uses three posters", actual, `is`(expected))
+    }
+
+    @Test
+    fun usesFourCatalogColumnsOnPhoneLandscape() {
+        val actual = ResponsiveLayout.mobileCatalogColumns(648, landscape = true)
+        val expected = 4
+        assertThat("landscape fits four posters", actual, `is`(expected))
     }
 
     @Test

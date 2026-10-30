@@ -23,8 +23,8 @@ android {
         applicationId = "dev.alaev.rezkatv"
         minSdk = 28
         targetSdk = 35
-        versionCode = providers.environmentVariable("REZKA_VERSION_CODE").orNull?.toIntOrNull() ?: 2
-        versionName = providers.environmentVariable("REZKA_VERSION_NAME").orNull ?: "1.1.0"
+        versionCode = providers.environmentVariable("REZKA_VERSION_CODE").orNull?.toIntOrNull() ?: 3
+        versionName = providers.environmentVariable("REZKA_VERSION_NAME").orNull ?: "1.2.0"
     }
 
     signingConfigs {
@@ -37,6 +37,10 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".qa"
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true

@@ -5,16 +5,28 @@ object ResponsiveLayout {
     private const val PHONE_GRID_COLUMNS = 2
     private const val THREE_COLUMN_MIN_DP = 360
     private const val MOBILE_CATALOG_COLUMNS = 3
+    private const val LANDSCAPE_POSTER_WIDTH_DP = 145
+    private const val LANDSCAPE_MIN_COLUMNS = 3
+    private const val LANDSCAPE_MAX_COLUMNS = 6
     private const val TV_GRID_COLUMNS = 6
     private const val PHONE_SEARCH_COLUMNS = 2
     private const val TV_SEARCH_COLUMNS = 4
+    private const val SEARCH_PADDING_DP = 24
+    private const val SEARCH_GAP_DP = 14
 
     fun isCompact(widthDp: Int) = widthDp <= COMPACT_MAX_WIDTH_DP
     fun useMobileCatalog(widthDp: Int) = isCompact(widthDp)
     fun isPhone(smallestWidthDp: Int) = smallestWidthDp <= COMPACT_MAX_WIDTH_DP
-    fun mobileCatalogColumns(widthDp: Int) =
+    fun mobileCatalogColumns(widthDp: Int, landscape: Boolean = false): Int = if (landscape) {
+        (widthDp / LANDSCAPE_POSTER_WIDTH_DP).coerceIn(LANDSCAPE_MIN_COLUMNS, LANDSCAPE_MAX_COLUMNS)
+    } else {
         if (widthDp >= THREE_COLUMN_MIN_DP) MOBILE_CATALOG_COLUMNS else PHONE_GRID_COLUMNS
+    }
     fun gridColumns(widthDp: Int) = if (isCompact(widthDp)) PHONE_GRID_COLUMNS else TV_GRID_COLUMNS
     fun searchColumns(widthDp: Int) = if (isCompact(widthDp)) PHONE_SEARCH_COLUMNS else TV_SEARCH_COLUMNS
+    fun searchPosterWidthDp(widthDp: Int): Int {
+        val columns = searchColumns(widthDp)
+        return ((widthDp - SEARCH_PADDING_DP - SEARCH_GAP_DP * (columns - 1)) / columns).coerceAtLeast(1)
+    }
     fun useEdgeAwareRows(widthDp: Int) = isCompact(widthDp)
 }

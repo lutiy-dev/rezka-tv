@@ -44,6 +44,7 @@ class SearchActivity : Activity() {
     private lateinit var keyboard: VerticalGridView
     private lateinit var results: CardAdapter
 
+    @Suppress("LongMethod")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(if (phoneMode) R.layout.activity_search_mobile else R.layout.activity_search)
@@ -99,6 +100,9 @@ class SearchActivity : Activity() {
                     onQueryChanged()
                 }
             })
+            input.setText(savedInstanceState?.getString(STATE_QUERY) ?: intent.getStringExtra(EXTRA_QUERY).orEmpty())
+            input.setSelection(input.text.length)
+            input.requestFocus()
             configureKeyboardDismiss(input)
             input.post {
                 (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)

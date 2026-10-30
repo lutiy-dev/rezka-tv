@@ -32,10 +32,10 @@ jobs:
           GATE_BASE: origin/${{ github.base_ref || 'main' }}
 
       - name: Build QA APK
-        if: github.head_ref == 'test/1.2.0-qa-apk' || github.head_ref == 'test/1.2.0-playback-baseline' || github.head_ref == 'test/1.2.0-voice-search'
+        if: github.head_ref == 'test/1.2.0-qa-apk' || github.head_ref == 'test/1.2.0-playback-baseline' || github.head_ref == 'test/1.2.0-voice-search' || github.head_ref == 'test/1.2.1-google-tv-search'
         run: ./gradlew assembleDebug
       - name: Upload QA APK
-        if: github.head_ref == 'test/1.2.0-qa-apk' || github.head_ref == 'test/1.2.0-playback-baseline' || github.head_ref == 'test/1.2.0-voice-search'
+        if: github.head_ref == 'test/1.2.0-qa-apk' || github.head_ref == 'test/1.2.0-playback-baseline' || github.head_ref == 'test/1.2.0-voice-search' || github.head_ref == 'test/1.2.1-google-tv-search'
         uses: actions/upload-artifact@v7
         with:
           name: Rezka-TV-1.2.0-${{ github.head_ref == 'test/1.2.0-playback-baseline' && 'Playback-Baseline' || 'QA' }}

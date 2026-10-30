@@ -31,6 +31,29 @@ jobs:
           PYTHON: python
           GATE_BASE: origin/${{ github.base_ref || 'main' }}
 
+      - name: Restore QA signing keystore
+        if: github.head_ref == 'test/1.2.2-mobile-search-grid'
+        env:
+          REZKA_KEYSTORE_B64: ${{ secrets.REZKA_KEYSTORE_B64 }}
+          REZKA_STORE_PASSWORD: ${{ secrets.REZKA_STORE_PASSWORD }}
+          REZKA_KEY_ALIAS: ${{ secrets.REZKA_KEY_ALIAS }}
+          REZKA_KEY_PASSWORD: ${{ secrets.REZKA_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$REZKA_KEYSTORE_B64"
+          test -n "$REZKA_STORE_PASSWORD"
+          test -n "$REZKA_KEY_ALIAS"
+          test -n "$REZKA_KEY_PASSWORD"
+          printf '%s' "$REZKA_KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/rezka-qa.jks"
+          test -s "$RUNNER_TEMP/rezka-qa.jks"
+          {
+            echo "storeFile=$RUNNER_TEMP/rezka-qa.jks"
+            echo "storePassword=$REZKA_STORE_PASSWORD"
+            echo "keyAlias=$REZKA_KEY_ALIAS"
+            echo "keyPassword=$REZKA_KEY_PASSWORD"
+          } > keystore.properties
+          chmod 600 keystore.properties "$RUNNER_TEMP/rezka-qa.jks"
+
       - name: Build QA APK
         if: github.head_ref == 'test/1.2.0-qa-apk' || github.head_ref == 'test/1.2.0-playback-baseline' || github.head_ref == 'test/1.2.0-voice-search' || github.head_ref == 'test/1.2.1-google-tv-search' || github.head_ref == 'test/1.2.2-mobile-search-grid'
         run: ./gradlew assembleDebug

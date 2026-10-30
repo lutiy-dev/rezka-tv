@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 
 class MobileNavigationTest {
     @Test
-    fun moreMenuKeepsTheSixOriginalSectionsInOrder() {
+    fun preservesOriginalMoreMenuSectionOrder() {
         val primary = listOf(Section.HOME, Section.FILMS, Section.SERIES, Section.SEARCH)
         val actual = Section.entries.filterNot { it in primary }
         val expected = listOf(

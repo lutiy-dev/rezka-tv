@@ -102,7 +102,7 @@ internal class MobileSettingsView(private val activity: Activity) {
 
         section(root, "ПРИЛОЖЕНИЕ")
         val application = panel(root)
-        row(application, activity.getString(R.string.pref_check_updates), null, "↻")
+        row(application, activity.getString(R.string.pref_check_updates), label("↻", 24f, muted))
             .setOnClickListener { UpdateManager.check(activity, force = true) }
         divider(application)
         val version = row(application, activity.getString(R.string.pref_version))
@@ -192,10 +192,6 @@ internal class MobileSettingsView(private val activity: Activity) {
         if (trailing != null) outer.addView(trailing)
         parent.addView(outer, LinearLayout.LayoutParams(-1, -2))
         return outer
-    }
-
-    private fun row(parent: LinearLayout, title: String, trailing: View?, accessory: String): LinearLayout {
-        return row(parent, title, trailing).also { it.addView(label(accessory, 24f, muted)) }
     }
 
     private fun divider(parent: LinearLayout) {

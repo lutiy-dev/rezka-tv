@@ -102,11 +102,7 @@ class SearchActivity : Activity() {
             input.setText(savedInstanceState?.getString(STATE_QUERY) ?: intent.getStringExtra(EXTRA_QUERY).orEmpty())
             input.setSelection(input.text.length)
             input.requestFocus()
-            findViewById<View>(R.id.hide_keyboard).setOnClickListener {
-                (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
-                    .hideSoftInputFromWindow(input.windowToken, 0)
-                input.clearFocus()
-            }
+            configureKeyboardDismiss(input)
             window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
         } else {
             showKeyboard()
@@ -115,6 +111,14 @@ class SearchActivity : Activity() {
                 query.append(it.lowercase())
                 onQueryChanged()
             }
+        }
+    }
+
+    private fun configureKeyboardDismiss(input: EditText) {
+        findViewById<View>(R.id.hide_keyboard).setOnClickListener {
+            (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                .hideSoftInputFromWindow(input.windowToken, 0)
+            input.clearFocus()
         }
     }
 

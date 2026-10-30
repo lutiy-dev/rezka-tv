@@ -87,6 +87,32 @@ jobs:
       - name: Verify APK exists
         run: test -f app/build/outputs/apk/release/app-release.apk
 
+      - name: Verify signing certificate against latest published release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p previous-release
+          LATEST_TAG="$(gh release view --json tagName --jq '.tagName')"
+          test -n "$LATEST_TAG"
+          gh release download "$LATEST_TAG" --pattern '*.apk' --dir previous-release
+          mapfile -t PREVIOUS_APKS < <(find previous-release -maxdepth 1 -type f -name '*.apk')
+          test "${#PREVIOUS_APKS[@]}" -eq 1
+          APKSIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          test -x "$APKSIGNER"
+          CURRENT_APK="app/build/outputs/apk/release/app-release.apk"
+          "$APKSIGNER" verify "$CURRENT_APK"
+          "$APKSIGNER" verify "${PREVIOUS_APKS[0]}"
+          CURRENT_CERT="$("$APKSIGNER" verify --print-certs "$CURRENT_APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -n 1)"
+          PREVIOUS_CERT="$("$APKSIGNER" verify --print-certs "${PREVIOUS_APKS[0]}" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -n 1)"
+          test -n "$CURRENT_CERT"
+          test -n "$PREVIOUS_CERT"
+          if [ "$CURRENT_CERT" != "$PREVIOUS_CERT" ]; then
+            echo "::error::APK signing certificate differs from latest published release ($LATEST_TAG); refusing publication"
+            exit 1
+          fi
+          echo "Signing certificate matches latest release ($LATEST_TAG)."
+
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}

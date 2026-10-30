@@ -71,8 +71,10 @@ class SearchActivity : Activity() {
                 )
             }
             val spacing = resources.getDimensionPixelSize(R.dimen.card_spacing)
-            horizontalSpacing = spacing
-            verticalSpacing = spacing
+            if (!phoneMode) {
+                (this as VerticalGridView).horizontalSpacing = spacing
+                verticalSpacing = spacing
+            }
             itemAnimator = null
             adapter = results
         }

@@ -105,10 +105,7 @@ class SearchActivity : Activity() {
             configureKeyboardDismiss(input)
             input.requestFocus()
             window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
-            input.post {
-                (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
-                    .showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
-            }
+            showMobileKeyboard(input)
         } else {
             showKeyboard()
             keyboard.requestFocus()
@@ -116,6 +113,13 @@ class SearchActivity : Activity() {
                 query.append(it.lowercase())
                 onQueryChanged()
             }
+        }
+    }
+
+    private fun showMobileKeyboard(input: EditText) {
+        input.post {
+            (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                .showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
         }
     }
 

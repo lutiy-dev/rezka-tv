@@ -45,7 +45,7 @@
             android:paddingHorizontal="6dp"
             android:gravity="center"
             android:contentDescription="@string/hide_keyboard"
-            android:text="⌄"
+            android:text="@string/hide_keyboard"
             android:textColor="@color/text"
             android:textSize="15sp" />
     </LinearLayout>

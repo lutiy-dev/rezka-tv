@@ -10,7 +10,6 @@ import android.speech.RecognizerIntent
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.TextView
@@ -104,8 +103,10 @@ class SearchActivity : Activity() {
             input.setSelection(input.text.length)
             configureKeyboardDismiss(input)
             input.requestFocus()
-            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
-            showMobileKeyboard(input)
+            input.post {
+                (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
+                    .showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
+            }
         } else {
             showKeyboard()
             keyboard.requestFocus()
@@ -113,13 +114,6 @@ class SearchActivity : Activity() {
                 query.append(it.lowercase())
                 onQueryChanged()
             }
-        }
-    }
-
-    private fun showMobileKeyboard(input: EditText) {
-        input.post {
-            (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
-                .showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
         }
     }
 

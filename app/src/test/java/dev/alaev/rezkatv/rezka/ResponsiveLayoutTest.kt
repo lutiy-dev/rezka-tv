@@ -76,6 +76,13 @@ class ResponsiveLayoutTest {
     }
 
     @Test
+    fun keepsSearchGridTwoColumnsOnNarrowPhone() {
+        val actual = ResponsiveLayout.searchColumns(320)
+        val expected = 2
+        assertThat("narrow phone search columns", actual, `is`(expected))
+    }
+
+    @Test
     fun fitsSearchPostersWithinPortraitWidth() {
         val width = ResponsiveLayout.searchPosterWidthDp(392)
         val actual = width * 2 + 14 + 24

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Rezka TV</string>
     <string name="settings">Настройки</string>
     <string name="continue_position">%1$s из %2$s</string>
     <string name="load_error">Не удалось открыть %1$s\n%2$s\n\nOK — повторить</string>

@@ -62,20 +62,24 @@ class MobileNavigation(
                 cornerRadius = dp(MENU_CORNER_RADIUS).toFloat()
             }
         }
-        content.addView(TextView(context).apply {
-            setText(R.string.mobile_more)
-            textSize = MENU_TITLE_SIZE
-            setTextColor(context.getColor(R.color.accent))
-            setTypeface(null, Typeface.BOLD)
-            setPadding(dp(MENU_ITEM_PADDING), 0, 0, dp(MENU_ITEM_PADDING))
-        })
+        content.addView(
+            TextView(context).apply {
+                setText(R.string.mobile_more)
+                textSize = MENU_TITLE_SIZE
+                setTextColor(context.getColor(R.color.accent))
+                setTypeface(null, Typeface.BOLD)
+                setPadding(dp(MENU_ITEM_PADDING), 0, 0, dp(MENU_ITEM_PADDING))
+            },
+        )
         val scroll = ScrollView(context).apply { addView(content) }
         val dialog = AlertDialog.Builder(context).setView(scroll).create()
         secondary.forEachIndexed { index, section ->
-            content.addView(menuRow(section) {
-                dialog.dismiss()
-                select(section)
-            })
+            content.addView(
+                menuRow(section) {
+                    dialog.dismiss()
+                    select(section)
+                },
+            )
             if (index != secondary.lastIndex) content.addView(menuDivider())
         }
         dialog.setCanceledOnTouchOutside(true)

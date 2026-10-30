@@ -70,10 +70,9 @@ class SearchActivity : Activity() {
                     ResponsiveLayout.searchColumns(resources.configuration.screenWidthDp),
                 )
             }
-            val spacing = resources.getDimensionPixelSize(R.dimen.card_spacing)
             if (!phoneMode) {
-                (this as VerticalGridView).horizontalSpacing = spacing
-                verticalSpacing = spacing
+                (this as VerticalGridView).horizontalSpacing = resources.getDimensionPixelSize(R.dimen.card_spacing)
+                verticalSpacing = resources.getDimensionPixelSize(R.dimen.card_spacing)
             }
             itemAnimator = null
             adapter = results

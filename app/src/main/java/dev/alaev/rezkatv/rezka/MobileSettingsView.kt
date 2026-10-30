@@ -106,14 +106,7 @@ internal class MobileSettingsView(activity: Activity) : MobileSettingsPanel(acti
         }
     }
 
-    private fun choice(
-        group: LinearLayout,
-        title: Int,
-        key: String,
-        default: String,
-        titlesId: Int,
-        valuesId: Int,
-    ) {
+    private fun choice(group: LinearLayout, title: Int, key: String, default: String, titlesId: Int, valuesId: Int) {
         val titles = activity.resources.getStringArray(titlesId)
         val values = activity.resources.getStringArray(valuesId)
         val summary = label("", 13f, muted)

@@ -76,14 +76,12 @@ internal open class MobileSettingsPanel(protected val activity: Activity) {
     }
 
     protected fun label(value: String, size: Float, color: Int, bold: Boolean = false) = TextView(activity).apply {
-            text = value
-            textSize = size
-            setTextColor(color)
-            if (bold) setTypeface(null, Typeface.BOLD)
-            gravity = Gravity.CENTER_VERTICAL
-        }
-
-    protected fun dp(value: Int): Int {
-        return (value * activity.resources.displayMetrics.density + 0.5f).toInt()
+        text = value
+        textSize = size
+        setTextColor(color)
+        if (bold) setTypeface(null, Typeface.BOLD)
+        gravity = Gravity.CENTER_VERTICAL
     }
+
+    protected fun dp(value: Int) = (value * activity.resources.displayMetrics.density + 0.5f).toInt()
 }

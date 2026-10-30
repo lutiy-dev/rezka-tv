@@ -146,5 +146,4 @@
     <string name="mobile_more">Ещё</string>
     <string name="diagnostics_share">Отправить диагностический лог</string>
     <string name="hide_keyboard">Скрыть клавиатуру</string>
-    <string name="hide_keyboard_icon" translatable="false">⌄</string>
 </resources>

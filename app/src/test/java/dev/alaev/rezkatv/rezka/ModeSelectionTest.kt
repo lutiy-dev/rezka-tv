@@ -6,51 +6,51 @@ import org.junit.jupiter.api.Test
 
 class ModeSelectionTest {
     @Test
-    fun tvSystemModeUsesTvUi() {
+    fun resolvesTvSystemModeUsesTvUi() {
         val actual = ModeSelection.resolve(null, television = true, leanback = false)
         val expected = ModeSelection.TV
-        assertThat(actual, `is`(expected))
+        assertThat("mode selection case 1", actual, `is`(expected))
     }
 
     @Test
-    fun leanbackUsesTvUi() {
+    fun resolvesLeanbackUsesTvUi() {
         val actual = ModeSelection.resolve(null, television = false, leanback = true)
         val expected = ModeSelection.TV
-        assertThat(actual, `is`(expected))
+        assertThat("mode selection case 2", actual, `is`(expected))
     }
 
     @Test
-    fun ordinaryPhoneUsesTouchUi() {
+    fun resolvesOrdinaryPhoneUsesTouchUi() {
         val actual = ModeSelection.resolve(null, television = false, leanback = false)
         val expected = ModeSelection.TOUCH
-        assertThat(actual, `is`(expected))
+        assertThat("mode selection case 3", actual, `is`(expected))
     }
 
     @Test
-    fun touchOverrideWinsOnTv() {
+    fun resolvesTouchOverrideWinsOnTv() {
         val actual = ModeSelection.resolve(ModeSelection.TOUCH, television = true, leanback = true)
         val expected = ModeSelection.TOUCH
-        assertThat(actual, `is`(expected))
+        assertThat("mode selection case 4", actual, `is`(expected))
     }
 
     @Test
-    fun tvOverrideWinsOnPhone() {
+    fun resolvesTvOverrideWinsOnPhone() {
         val actual = ModeSelection.resolve(ModeSelection.TV, television = false, leanback = false)
         val expected = ModeSelection.TV
-        assertThat(actual, `is`(expected))
+        assertThat("mode selection case 5", actual, `is`(expected))
     }
 
     @Test
-    fun autoUsesSystemCapabilities() {
+    fun resolvesAutoUsesSystemCapabilities() {
         val actual = ModeSelection.resolve(ModeSelection.AUTO, television = false, leanback = true)
         val expected = ModeSelection.TV
-        assertThat(actual, `is`(expected))
+        assertThat("mode selection case 6", actual, `is`(expected))
     }
 
     @Test
-    fun unknownSavedValueFallsBackDeterministically() {
+    fun resolvesUnknownSavedValueFallsBackDeterministically() {
         val actual = ModeSelection.resolve("invalid", television = false, leanback = false)
         val expected = ModeSelection.TOUCH
-        assertThat(actual, `is`(expected))
+        assertThat("mode selection case 7", actual, `is`(expected))
     }
 }

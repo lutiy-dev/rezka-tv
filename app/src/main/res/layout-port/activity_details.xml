@@ -103,6 +103,13 @@
                         android:visibility="gone" />
 
                     <TextView
+                        android:id="@+id/favorite"
+                        style="@style/ActionButton"
+                        android:layout_width="match_parent"
+                        android:text="@string/favorites_add"
+                        android:visibility="gone" />
+
+                    <TextView
                         android:id="@+id/site"
                         style="@style/ActionButton"
                         android:layout_width="match_parent"

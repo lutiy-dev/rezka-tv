@@ -103,7 +103,7 @@ class RezkaClient private constructor(context: Context, val baseUrl: String) {
 
     fun addToFavorites(postId: String, categoryId: String): Boolean {
         require(postId.all(Char::isDigit) && categoryId.all(Char::isDigit))
-        val body = form(listOf("post_id" to postId, "cat_id" to categoryId, "action" to "add_post"))
+        val body = form(FavoritesRequest.addPost(postId, categoryId))
         val response = JSONObject(post(resolve("/ajax/favorites/"), body, baseUrl))
         return response.optBoolean("success") || response.optInt("success") == 1
     }

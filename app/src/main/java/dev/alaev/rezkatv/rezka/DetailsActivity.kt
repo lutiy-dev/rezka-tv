@@ -1,6 +1,8 @@
 package dev.alaev.rezkatv.rezka
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.widget.Toast
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -27,6 +29,7 @@ class DetailsActivity : Activity() {
     private lateinit var episodesButton: TextView
     private lateinit var translatorButton: TextView
     private lateinit var watchedButton: TextView
+    private lateinit var favoriteButton: TextView
     private lateinit var watched: WatchedStore
 
     private var details: Details? = null
@@ -49,6 +52,7 @@ class DetailsActivity : Activity() {
         episodesButton = findViewById(R.id.episodes)
         translatorButton = findViewById(R.id.translator)
         watchedButton = findViewById(R.id.watched)
+        favoriteButton = findViewById(R.id.favorite)
         watched = WatchedStore.get(this)
 
         findViewById<TextView>(R.id.title).text = intent.getStringExtra(EXTRA_TITLE)
@@ -60,6 +64,7 @@ class DetailsActivity : Activity() {
         episodesButton.setOnClickListener { showEpisodes() }
         translatorButton.setOnClickListener { showTranslators() }
         watchedButton.setOnClickListener { details?.let { watched.toggle(it.id) }; updateButtons() }
+        favoriteButton.setOnClickListener { chooseFavoriteCollection() }
         findViewById<View>(R.id.site).setOnClickListener { openSite(url) }
 
         client.cachedDetails(url)?.let { bind(it.value) }
@@ -143,6 +148,36 @@ class DetailsActivity : Activity() {
         translatorButton.visibility = if (d.translators.size > 1) View.VISIBLE else View.GONE
         watchedButton.setText(if (watched.isWatched(d.id)) R.string.unmark_watched else R.string.mark_watched)
         watchedButton.visibility = if (d.isSeries) View.GONE else View.VISIBLE
+        favoriteButton.visibility = if (d.id.all(Char::isDigit)) View.VISIBLE else View.GONE
+    }
+
+    private fun chooseFavoriteCollection() {
+        val d = details ?: return
+        favoriteButton.isEnabled = false
+        scope.launch {
+            val collections = loader.load { client.favoriteCollections() }
+            favoriteButton.isEnabled = true
+            if (collections.isNullOrEmpty()) {
+                Toast.makeText(this@DetailsActivity, R.string.favorites_no_collections, Toast.LENGTH_LONG).show()
+                return@launch
+            }
+            AlertDialog.Builder(this@DetailsActivity)
+                .setTitle(R.string.favorites_choose_collection)
+                .setItems(collections.map { it.name }.toTypedArray()) { _, index ->
+                    favoriteButton.isEnabled = false
+                    scope.launch {
+                        val added = loader.load { client.addToFavorites(d.id, collections[index].id) }
+                        favoriteButton.isEnabled = true
+                        Toast.makeText(
+                            this@DetailsActivity,
+                            if (added == true) R.string.favorites_added else R.string.favorites_add_failed,
+                            Toast.LENGTH_LONG,
+                        ).show()
+                        if (added == true) client.clearCaches()
+                    }
+                }
+                .show()
+        }
     }
 
     private fun remaining(label: String, entry: ResumeStore.Entry): String {

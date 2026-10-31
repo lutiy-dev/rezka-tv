@@ -61,8 +61,7 @@ enum class Category(val title: String, val path: String, val sortable: Boolean) 
     FILMS("Фильмы", "/films/", true),
     CARTOONS("Мультфильмы", "/cartoons/", true),
     ANIME("Аниме", "/animation/", true),
-    FAVORITES("Закладки", "/favorites/", false),
-    BEST("Лучшие", "/films/best/", false);
+    FAVORITES("Закладки", "/favorites/", false);
 
     fun path(sort: Sort) = if (sortable) "$path?filter=${sort.filter}" else path
 }

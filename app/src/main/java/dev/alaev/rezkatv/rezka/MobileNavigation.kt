@@ -15,8 +15,8 @@ import android.widget.TextView
 import dev.alaev.rezkatv.R
 
 internal fun mobileMoreSections(): List<Section> = Section.entries.filterNot {
-        it == Section.HOME || it == Section.FILMS || it == Section.SERIES || it == Section.SEARCH
-    }
+    it == Section.HOME || it == Section.FILMS || it == Section.SERIES || it == Section.SEARCH
+}
 
 class MobileNavigation(
     private val bar: LinearLayout,

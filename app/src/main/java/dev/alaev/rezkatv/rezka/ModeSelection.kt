@@ -18,11 +18,9 @@ internal object ModeSelection {
         else -> if (television || leanback) TV else TOUCH
     }
 
-    fun hasChoice(context: Context): Boolean =
-        PreferenceManager.getDefaultSharedPreferences(context).contains(KEY)
+    fun hasChoice(context: Context): Boolean = PreferenceManager.getDefaultSharedPreferences(context).contains(KEY)
 
-    fun saved(context: Context): String? =
-        PreferenceManager.getDefaultSharedPreferences(context).getString(KEY, null)
+    fun saved(context: Context): String? = PreferenceManager.getDefaultSharedPreferences(context).getString(KEY, null)
 
     fun save(context: Context, value: String) {
         require(value == AUTO || value == TV || value == TOUCH)

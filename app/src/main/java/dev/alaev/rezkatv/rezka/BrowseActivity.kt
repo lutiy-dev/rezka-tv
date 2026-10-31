@@ -161,7 +161,9 @@ class BrowseActivity : Activity() {
             settings.liteMode != liteMode ||
             RezkaClient.baseUrl(this) != baseUrl ||
             ModeSelection.isTv(this) == phoneMode
-        ) recreate()
+        ) {
+            recreate()
+        }
     }
 
     override fun onDestroy() {

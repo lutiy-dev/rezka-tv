@@ -53,6 +53,7 @@ class ModeSelectionTest {
         val expected = ModeSelection.TOUCH
         assertThat("mode selection case 7", actual, `is`(expected))
     }
+
     @Test
     fun enablesCardFocusForTvMode() {
         val actual = ModeSelection.cardFocusable(ModeSelection.TV)

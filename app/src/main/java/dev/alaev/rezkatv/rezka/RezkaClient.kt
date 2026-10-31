@@ -89,6 +89,24 @@ class RezkaClient private constructor(context: Context, val baseUrl: String) {
         return StreamParser.thumbnails(request(url, null, null), url)
     }
 
+    data class FavoriteCollection(val id: String, val name: String)
+
+    fun favoriteCollections(): List<FavoriteCollection> {
+        val html = fetch(resolve("/favorites/"))
+        val doc = Jsoup.parse(html, baseUrl)
+        return doc.select("a.b-favorites_content__cats_list_link").mapNotNull { link ->
+            val id = Regex("""/favorites/(\d+)/?""").find(link.attr("href"))?.groupValues?.get(1)
+            if (id == null) null else FavoriteCollection(id, link.text().trim())
+        }.distinctBy { it.id }
+    }
+
+    fun addToFavorites(postId: String, categoryId: String): Boolean {
+        require(postId.all(Char::isDigit) && categoryId.all(Char::isDigit))
+        val body = form(FavoritesRequest.addPost(postId, categoryId))
+        val response = org.json.JSONObject(post(resolve("/ajax/favorites/"), body, baseUrl))
+        return response.optBoolean("success") || response.optInt("success") == 1
+    }
+
     fun saveProgress(d: Details, translatorId: String, episode: Episode?, positionMs: Long, durationMs: Long) {
         val body = Progress.saveForm(d.id, translatorId, episode?.season ?: 0, episode?.episode ?: 0, positionMs, durationMs)
         post(ajax("send_save"), body, d.url)

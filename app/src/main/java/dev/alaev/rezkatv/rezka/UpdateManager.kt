@@ -38,8 +38,10 @@ object UpdateManager {
             return
         }
         thread(name = "rezka-update-check") {
-            val manifest = runCatching { fetchManifestRelease() }.getOrNull()
-            val api = runCatching { fetchApiRelease() }.getOrNull()
+            val manifestAttempt = runCatching { fetchManifestRelease() }
+            val apiAttempt = runCatching { fetchApiRelease() }
+            val manifest = manifestAttempt.getOrNull()
+            val api = apiAttempt.getOrNull()
             val release = newest(manifest, api)
             if (manifest != null || api != null) {
                 prefs.edit().putLong(KEY_LAST_SUCCESSFUL_CHECK, now).apply()
@@ -54,8 +56,18 @@ object UpdateManager {
                         release != null && force ->
                             Toast.makeText(activity, R.string.update_up_to_date, Toast.LENGTH_SHORT).show()
 
-                        force ->
-                            Toast.makeText(activity, R.string.update_check_failed, Toast.LENGTH_SHORT).show()
+                        force -> {
+                            val reason = activity.getString(
+                                R.string.update_check_failed_details,
+                                failureReason(manifestAttempt.exceptionOrNull()),
+                                failureReason(apiAttempt.exceptionOrNull()),
+                            )
+                            AlertDialog.Builder(activity)
+                                .setTitle(R.string.update_check_failed)
+                                .setMessage(reason)
+                                .setPositiveButton(android.R.string.ok, null)
+                                .show()
+                        }
                     }
                 }
             }
@@ -111,7 +123,7 @@ object UpdateManager {
         connection.setRequestProperty("User-Agent", "Rezka-TV/${BuildConfig.VERSION_NAME}")
         return try {
             if (connection.responseCode !in 200..299) {
-                null
+                error("HTTP ${connection.responseCode}")
             } else {
                 JSONObject(connection.inputStream.bufferedReader().use { it.readText() })
             }
@@ -181,6 +193,12 @@ object UpdateManager {
             @Suppress("DEPRECATION", "UnspecifiedRegisterReceiverFlag")
             appContext.registerReceiver(receiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
         }
+    }
+
+    internal fun failureReason(error: Throwable?): String = when {
+        error == null -> "No release data"
+        error.message?.startsWith("HTTP ") == true -> error.message.orEmpty()
+        else -> error.javaClass.simpleName
     }
 
     internal fun newest(first: Release?, second: Release?): Release? = when {

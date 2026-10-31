@@ -59,4 +59,25 @@ class UpdateManagerTest {
         val expected = second.version
         assertThat("freshest update source wins", actual, `is`(expected))
     }
+
+    @Test
+    fun displaysHttpFailureStatus() {
+        val actual = UpdateManager.failureReason(IllegalStateException("HTTP 404"))
+        val expected = "HTTP 404"
+        assertThat("HTTP errors remain identifiable", actual, `is`(expected))
+    }
+
+    @Test
+    fun displaysNetworkFailureTypeWithoutExceptionDetails() {
+        val actual = UpdateManager.failureReason(java.net.UnknownHostException("example.internal"))
+        val expected = "UnknownHostException"
+        assertThat("network failures do not reveal host-specific details", actual, `is`(expected))
+    }
+
+    @Test
+    fun distinguishesEmptyReleaseFromNetworkException() {
+        val actual = UpdateManager.failureReason(null)
+        val expected = "No release data"
+        assertThat("empty manifest is distinguishable", actual, `is`(expected))
+    }
 }

@@ -67,3 +67,18 @@ jobs:
           name: Rezka-TV-1.2.3-QA
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+
+      - name: Build update diagnostics QA APK
+        if: github.head_ref == 'fix/update-check-diagnostics'
+        run: ./gradlew assembleDebug
+        env:
+          REZKA_VERSION_NAME: "1.2.6-qa"
+          REZKA_VERSION_CODE: "21"
+
+      - name: Upload update diagnostics QA APK
+        if: github.head_ref == 'fix/update-check-diagnostics'
+        uses: actions/upload-artifact@v7
+        with:
+          name: Rezka-TV-Update-Diagnostics-QA
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

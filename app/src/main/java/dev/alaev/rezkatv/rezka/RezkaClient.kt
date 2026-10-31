@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import dev.alaev.rezkatv.rezka.login.LoginResult
 import org.jsoup.Jsoup
+import org.json.JSONObject
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.IOException
@@ -87,6 +88,24 @@ class RezkaClient private constructor(context: Context, val baseUrl: String) {
     fun thumbnails(path: String): List<Tile> {
         val url = resolve(path)
         return StreamParser.thumbnails(request(url, null, null), url)
+    }
+
+    data class FavoriteCollection(val id: String, val name: String)
+
+    fun favoriteCollections(): List<FavoriteCollection> {
+        val html = fetch(resolve("/favorites/"))
+        val doc = Jsoup.parse(html, baseUrl)
+        return doc.select("a.b-favorites_content__cats_list_link").mapNotNull { link ->
+            val id = Regex("""/favorites/(\\d+)/?""").find(link.attr("href"))?.groupValues?.get(1)
+            if (id == null) null else FavoriteCollection(id, link.text().trim())
+        }.distinctBy { it.id }
+    }
+
+    fun addToFavorites(postId: String, categoryId: String): Boolean {
+        require(postId.all(Char::isDigit) && categoryId.all(Char::isDigit))
+        val body = form(listOf("post_id" to postId, "cat_id" to categoryId, "action" to "add_post"))
+        val response = JSONObject(post(resolve("/ajax/favorites/"), body, baseUrl))
+        return response.optBoolean("success") || response.optInt("success") == 1
     }
 
     fun saveProgress(d: Details, translatorId: String, episode: Episode?, positionMs: Long, durationMs: Long) {

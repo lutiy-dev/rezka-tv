@@ -37,6 +37,7 @@ class GridPage(
     )
 
     private var category: Category? = null
+    private var favoriteUrl: String? = null
     private var sort = Sort.POPULAR
     private var nextUrl: String? = null
     private var loadJob: Job? = null
@@ -67,7 +68,7 @@ class GridPage(
         sort = Sort.POPULAR
         title.text = category.title
         buildChips(category)
-        load()
+        if (category == Category.FAVORITES) loadFavoriteCollections() else load()
     }
 
     fun hide() {
@@ -116,9 +117,39 @@ class GridPage(
         }
     }
 
+    private fun loadFavoriteCollections() {
+        loadJob?.cancel()
+        adapter.replace(emptyList())
+        info.setText(R.string.loading)
+        loadJob = scope.launch {
+            val collections = loader.load { client.favoriteCollections() }
+            if (category != Category.FAVORITES) return@launch
+            if (collections.isNullOrEmpty()) {
+                info.setText(if (collections == null) R.string.load_failed else R.string.nothing_here)
+                return@launch
+            }
+            favoriteUrl = null
+            chips.removeAllViews()
+            val inflater = LayoutInflater.from(activity)
+            collections.forEach { collection ->
+                val chip = inflater.inflate(R.layout.item_chip, chips, false) as TextView
+                chip.text = collection.name
+                chip.setOnClickListener {
+                    favoriteUrl = client.resolve("/favorites/${collection.id}/")
+                    for (i in 0 until chips.childCount) {
+                        chips.getChildAt(i).isActivated = chips.getChildAt(i) == chip
+                    }
+                    load()
+                }
+                chips.addView(chip)
+            }
+            chips.getChildAt(0).performClick()
+        }
+    }
+
     private fun load() {
         val category = category ?: return
-        val url = client.categoryUrl(category, sort)
+        val url = if (category == Category.FAVORITES) favoriteUrl ?: return else client.categoryUrl(category, sort)
         loadJob?.cancel()
         moreJob?.cancel()
         moreJob = null

@@ -14,13 +14,18 @@ import android.widget.ScrollView
 import android.widget.TextView
 import dev.alaev.rezkatv.R
 
+internal fun mobileMoreSections(): List<Section> =
+    Section.entries.filterNot {
+        it == Section.HOME || it == Section.FILMS || it == Section.SERIES || it == Section.SEARCH
+    }
+
 class MobileNavigation(
     private val bar: LinearLayout,
     private val onSelect: (Section) -> Unit,
     private val vertical: Boolean = false,
 ) {
     private val primary = listOf(Section.HOME, Section.FILMS, Section.SERIES, Section.SEARCH)
-    private val secondary = Section.entries.filterNot { it in primary }
+    private val secondary = mobileMoreSections()
     private val buttons = mutableMapOf<Section, TextView>()
 
     init {

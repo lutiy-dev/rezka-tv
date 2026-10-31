@@ -63,6 +63,8 @@ internal class MobileSettingsView(activity: Activity) : MobileSettingsPanel(acti
         section(root, activity.getString(R.string.pref_interface))
         val interfacePanel = panel(root)
         toggle(interfacePanel, R.string.pref_lite, R.string.pref_lite_summary, "lite_mode", false)
+        divider(interfacePanel)
+        modeChoice(interfacePanel)
 
         section(root, activity.getString(R.string.pref_site))
         val site = panel(root)
@@ -103,6 +105,30 @@ internal class MobileSettingsView(activity: Activity) : MobileSettingsPanel(acti
     fun refreshAccount() {
         if (::accountStatus.isInitialized) {
             accountStatus.text = if (RezkaClient.get(activity).isLoggedIn) "Подключён" else "Не подключён"
+        }
+    }
+
+    private fun modeChoice(group: LinearLayout) {
+        val titles = activity.resources.getStringArray(R.array.control_mode_titles)
+        val values = activity.resources.getStringArray(R.array.control_mode_values)
+        val summary = label("", 13f, muted)
+        val item = row(group, activity.getString(R.string.pref_control_mode), summary)
+        fun update() {
+            val index = MobileSettingsSelection.index(values, ModeSelection.saved(activity) ?: ModeSelection.AUTO)
+            summary.text = titles.getOrNull(index).orEmpty() + "  ›"
+        }
+        update()
+        item.setOnClickListener {
+            val selected = MobileSettingsSelection.index(values, ModeSelection.saved(activity) ?: ModeSelection.AUTO)
+            AlertDialog.Builder(activity)
+                .setTitle(R.string.pref_control_mode)
+                .setSingleChoiceItems(titles, selected) { dialog, index ->
+                    ModeSelection.save(activity, values[index])
+                    dialog.dismiss()
+                    activity.finish()
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
         }
     }
 

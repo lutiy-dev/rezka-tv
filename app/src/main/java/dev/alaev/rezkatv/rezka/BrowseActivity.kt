@@ -1,6 +1,7 @@
 package dev.alaev.rezkatv.rezka
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
@@ -35,7 +36,7 @@ class BrowseActivity : Activity() {
     private lateinit var choice: ChoicePanel
     private lateinit var root: BrowseFrameLayout
 
-    private val phoneMode by lazy { ResponsiveLayout.isPhone(resources.configuration.smallestScreenWidthDp) }
+    private val phoneMode by lazy { !ModeSelection.isTv(this) }
     private var displayedOrientation = Configuration.ORIENTATION_UNDEFINED
     private var mobileNavigation: MobileNavigation? = null
     private var liteMode = false
@@ -74,7 +75,26 @@ class BrowseActivity : Activity() {
         }
 
         home.load()
+        if (!ModeSelection.hasChoice(this)) showModePicker()
         UpdateManager.check(this)
+    }
+
+    private fun showModePicker() {
+        val recommended = ModeSelection.effective(this)
+        val options = arrayOf(getString(R.string.mode_tv), getString(R.string.mode_touch))
+        val initial = if (recommended == ModeSelection.TV) 0 else 1
+        var selected = initial
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(R.string.mode_first_run)
+            .setSingleChoiceItems(options, initial) { _, index -> selected = index }
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                val chosen = if (selected == 0) ModeSelection.TV else ModeSelection.TOUCH
+                ModeSelection.save(this, chosen)
+                if (ModeSelection.isTv(this) == phoneMode) recreate()
+            }
+            .setCancelable(false)
+            .create()
+        dialog.show()
     }
 
     private fun configureMobileNavigation() {
@@ -137,7 +157,13 @@ class BrowseActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
-        if (settings.liteMode != liteMode || RezkaClient.baseUrl(this) != baseUrl) recreate()
+        if (
+            settings.liteMode != liteMode ||
+            RezkaClient.baseUrl(this) != baseUrl ||
+            ModeSelection.isTv(this) == phoneMode
+        ) {
+            recreate()
+        }
     }
 
     override fun onDestroy() {

@@ -48,7 +48,7 @@ class CardAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_card, parent, false)
         view.clipToOutline = true
-        val phone = ResponsiveLayout.isPhone(parent.resources.configuration.smallestScreenWidthDp)
+        val phone = !ModeSelection.isTv(parent.context)
         if ((catalogMode || searchMode) && phone) {
             val widthDp = parent.resources.configuration.screenWidthDp
             val landscape = parent.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -72,7 +72,7 @@ class CardAdapter(
             val width = (itemWidthDp * density).toInt()
             view.layoutParams = RecyclerView.LayoutParams(width, width * POSTER_HEIGHT_RATIO / POSTER_WIDTH_RATIO)
         }
-        if (phone) {
+        if (!ModeSelection.cardFocusable(ModeSelection.effective(parent.context))) {
             view.isFocusable = false
             view.isFocusableInTouchMode = false
         }

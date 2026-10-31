@@ -53,4 +53,17 @@ class ModeSelectionTest {
         val expected = ModeSelection.TOUCH
         assertThat("mode selection case 7", actual, `is`(expected))
     }
+    @Test
+    fun enablesCardFocusForTvMode() {
+        val actual = ModeSelection.cardFocusable(ModeSelection.TV)
+        val expected = true
+        assertThat("TV cards accept D-pad focus", actual, `is`(expected))
+    }
+
+    @Test
+    fun disablesCardFocusForTouchMode() {
+        val actual = ModeSelection.cardFocusable(ModeSelection.TOUCH)
+        val expected = false
+        assertThat("touch cards do not capture D-pad focus", actual, `is`(expected))
+    }
 }

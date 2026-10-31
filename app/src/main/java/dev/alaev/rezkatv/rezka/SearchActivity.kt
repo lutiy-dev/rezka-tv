@@ -9,8 +9,8 @@ import android.content.res.Configuration
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.speech.RecognitionListener
-import android.speech.SpeechRecognizer
 import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
@@ -27,6 +27,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@Suppress("TooManyFunctions")
 class SearchActivity : Activity() {
 
     private enum class Layout(val letters: String, val label: String) {
@@ -140,7 +141,9 @@ class SearchActivity : Activity() {
                         showEmpty(R.string.voice_search_unavailable)
                     }
                     override fun onResults(results: Bundle?) {
-                        applyVoiceQuery(VoiceSearchQuery.first(results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)))
+                        applyVoiceQuery(
+                            VoiceSearchQuery.first(results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)),
+                        )
                     }
                     override fun onPartialResults(partialResults: Bundle?) = Unit
                     override fun onEvent(eventType: Int, params: Bundle?) = Unit

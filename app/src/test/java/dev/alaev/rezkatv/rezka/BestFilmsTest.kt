@@ -72,6 +72,5 @@ class BestFilmsTest {
         assertThat("best section uses the catalog grid", Section.TOP.category, `is`(expected))
     }
 
-    private fun populated(next: String?) =
-        Page(listOf(Card("123", "/films/123-film.html", "Film", "", "", null)), next)
+    private fun populated(next: String?) = Page(listOf(Card("123", "/films/123-film.html", "Film", "", "", null)), next)
 }

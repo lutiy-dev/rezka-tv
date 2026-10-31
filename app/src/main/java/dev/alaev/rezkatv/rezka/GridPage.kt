@@ -67,7 +67,7 @@ class GridPage(
         sort = Sort.POPULAR
         title.text = category.title
         buildChips(category)
-        load()
+        if (category == Category.BEST) loadBest() else load()
     }
 
     fun hide() {
@@ -118,7 +118,6 @@ class GridPage(
 
     private fun load() {
         val category = category ?: return
-        if (category == Category.BEST) return loadBest()
         val url = client.categoryUrl(category, sort)
         loadJob?.cancel()
         moreJob?.cancel()

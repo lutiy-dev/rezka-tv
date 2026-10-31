@@ -7,8 +7,7 @@ import org.junit.jupiter.api.Test
 class MobileNavigationTest {
     @Test
     fun preservesOriginalMoreMenuSectionOrder() {
-        val primary = listOf(Section.HOME, Section.FILMS, Section.SERIES, Section.SEARCH)
-        val actual = Section.entries.filterNot { it in primary }
+        val actual = mobileMoreSections()
         val expected = listOf(
             Section.CARTOONS,
             Section.ANIME,
@@ -18,5 +17,13 @@ class MobileNavigationTest {
             Section.SETTINGS,
         )
         assertThat("More menu order and navigation targets", actual, `is`(expected))
+    }
+
+    @Test
+    fun excludesPrimaryNavigationFromMoreMenu() {
+        val actual = mobileMoreSections().any {
+            it in listOf(Section.HOME, Section.FILMS, Section.SERIES, Section.SEARCH)
+        }
+        assertThat("Primary tabs are not duplicated", actual, `is`(false))
     }
 }

@@ -1,8 +1,5 @@
 package dev.alaev.rezkatv.rezka
 
-import android.app.UiModeManager
-import android.content.Context
-import android.content.res.Configuration
 import android.os.Bundle
 import android.webkit.CookieManager
 import android.widget.Toast
@@ -21,8 +18,7 @@ class SettingsActivity : FragmentActivity() {
     private var mobileSettings: MobileSettingsView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val mode = getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
-        val isTv = mode.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
+        val isTv = ModeSelection.isTv(this)
         if (!isTv) setTheme(R.style.Theme_RezkaTv_Settings_Mobile)
         super.onCreate(savedInstanceState)
         if (isTv) {
@@ -67,6 +63,11 @@ class SettingsActivity : FragmentActivity() {
 
     companion object {
         private fun bindPreferences(fragment: PreferenceFragmentCompat) {
+            fragment.findPreference<Preference>("control_mode")?.setOnPreferenceChangeListener { _, value ->
+                ModeSelection.save(fragment.requireContext(), value as String)
+                fragment.requireActivity().finish()
+                true
+            }
             fragment.findPreference<Preference>("version")?.summary = BuildConfig.VERSION_NAME
             fragment.findPreference<Preference>("check_updates")?.setOnPreferenceClickListener {
                 UpdateManager.check(fragment.requireActivity(), force = true)

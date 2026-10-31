@@ -44,7 +44,7 @@ class HomePage(
     private val heroExtra: TextView = activity.findViewById(R.id.hero_extra)
     private val heroDescription: TextView = activity.findViewById(R.id.hero_description)
 
-    private val compact = ResponsiveLayout.isPhone(activity.resources.configuration.smallestScreenWidthDp)
+    private val compact = !ModeSelection.isTv(activity)
     private val shelves = Shelf.entries.filter { !lite || it.inLiteMode }
     private val rows = mutableListOf<ShelfRow>()
     private val rowsAdapter = RowsAdapter()

@@ -147,6 +147,7 @@ class GridPage(
         }
     }
 
+    @Suppress("ReturnCount")
     private fun load() {
         val category = category ?: return
         val url = if (category == Category.FAVORITES) favoriteUrl ?: return else client.categoryUrl(category, sort)

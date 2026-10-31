@@ -99,6 +99,10 @@
     <string name="pref_autoplay_summary">Отсчёт 10 секунд в конце серии</string>
     <string name="pref_seek_step">Шаг перемотки</string>
     <string name="pref_interface">Интерфейс</string>
+    <string name="pref_control_mode">Режим управления</string>
+    <string name="mode_first_run">Выберите способ управления</string>
+    <string name="mode_tv">TV / Пульт</string>
+    <string name="mode_touch">Телефон / Touch</string>
     <string name="pref_lite">Облегчённый режим</string>
     <string name="pref_lite_summary">Без большой обложки и с меньшим числом рядов</string>
     <string name="pref_site">Сайт</string>

@@ -140,6 +140,7 @@
     <string name="update_later">Позже</string>
     <string name="update_up_to_date">Установлена актуальная версия</string>
     <string name="update_check_failed">Не удалось проверить обновления</string>
+    <string name="update_check_failed_details">Источник update.json: %1$s\nGitHub API: %2$s</string>
     <string name="update_allow_install">Разрешите Rezka TV устанавливать неизвестные приложения, затем нажмите «Обновить» ещё раз</string>
     <string name="update_downloading">Загрузка обновления…</string>
     <string name="update_download_failed">Не удалось скачать обновление</string>

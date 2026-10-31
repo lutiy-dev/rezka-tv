@@ -1,11 +1,15 @@
 package dev.alaev.rezkatv.rezka
 
+import android.Manifest
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.speech.RecognitionListener
+import android.speech.SpeechRecognizer
 import android.speech.RecognizerIntent
 import android.text.Editable
 import android.text.TextWatcher
@@ -32,10 +36,11 @@ class SearchActivity : Activity() {
     }
 
     private val scope = MainScope()
-    private val phoneMode by lazy { ResponsiveLayout.isPhone(resources.configuration.smallestScreenWidthDp) }
+    private val phoneMode by lazy { !ModeSelection.isTv(this) }
     private val query = StringBuilder()
     private var layout = Layout.RU
     private var searchJob: Job? = null
+    private var speechRecognizer: SpeechRecognizer? = null
 
     private lateinit var client: RezkaClient
     private lateinit var loader: Loader
@@ -78,17 +83,7 @@ class SearchActivity : Activity() {
             adapter = results
         }
 
-        findViewById<View>(R.id.voice_search).setOnClickListener {
-            try {
-                val speech = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-                    putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-                    putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ru-RU")
-                }
-                startActivityForResult(speech, VOICE_REQUEST)
-            } catch (_: ActivityNotFoundException) {
-                showEmpty(R.string.voice_search_unavailable)
-            }
-        }
+        findViewById<View>(R.id.voice_search).setOnClickListener { startVoiceSearch() }
         if (phoneMode) {
             val input = queryView as EditText
             input.addTextChangedListener(object : TextWatcher {
@@ -118,6 +113,77 @@ class SearchActivity : Activity() {
         }
     }
 
+    private fun speechIntent() = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+        putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ru-RU")
+    }
+
+    private fun startVoiceSearch() {
+        if (phoneMode || !SpeechRecognizer.isRecognitionAvailable(this)) {
+            launchVoiceIntent()
+            return
+        }
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), AUDIO_PERMISSION_REQUEST)
+            return
+        }
+        speechRecognizer?.destroy()
+        try {
+            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this).apply {
+                setRecognitionListener(object : RecognitionListener {
+                    override fun onReadyForSpeech(params: Bundle?) = Unit
+                    override fun onBeginningOfSpeech() = Unit
+                    override fun onRmsChanged(rmsdB: Float) = Unit
+                    override fun onBufferReceived(buffer: ByteArray?) = Unit
+                    override fun onEndOfSpeech() = Unit
+                    override fun onError(error: Int) {
+                        showEmpty(R.string.voice_search_unavailable)
+                    }
+                    override fun onResults(results: Bundle?) {
+                        applyVoiceQuery(VoiceSearchQuery.first(results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)))
+                    }
+                    override fun onPartialResults(partialResults: Bundle?) = Unit
+                    override fun onEvent(eventType: Int, params: Bundle?) = Unit
+                })
+                startListening(speechIntent())
+            }
+        } catch (_: RuntimeException) {
+            speechRecognizer?.destroy()
+            speechRecognizer = null
+            launchVoiceIntent()
+        }
+    }
+
+    private fun launchVoiceIntent() {
+        try {
+            startActivityForResult(speechIntent(), VOICE_REQUEST)
+        } catch (_: ActivityNotFoundException) {
+            showEmpty(R.string.voice_search_unavailable)
+        }
+    }
+
+    private fun applyVoiceQuery(spoken: String?) {
+        if (spoken.isNullOrBlank()) return
+        if (phoneMode) {
+            (queryView as EditText).setText(spoken)
+        } else {
+            query.clear()
+            query.append(spoken)
+            onQueryChanged()
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == AUDIO_PERMISSION_REQUEST) {
+            if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+                startVoiceSearch()
+            } else {
+                showEmpty(R.string.voice_search_unavailable)
+            }
+        }
+    }
+
     private fun configureKeyboardDismiss(input: EditText) {
         findViewById<View>(R.id.hide_keyboard).setOnClickListener {
             (getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager)
@@ -131,15 +197,7 @@ class SearchActivity : Activity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == VOICE_REQUEST && resultCode == RESULT_OK) {
             val spoken = VoiceSearchQuery.first(data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS))
-            if (!spoken.isNullOrBlank()) {
-                if (phoneMode) {
-                    (queryView as EditText).setText(spoken)
-                } else {
-                    query.clear()
-                    query.append(spoken)
-                    onQueryChanged()
-                }
-            }
+            applyVoiceQuery(spoken)
         }
     }
 
@@ -160,6 +218,8 @@ class SearchActivity : Activity() {
     }
 
     override fun onDestroy() {
+        speechRecognizer?.destroy()
+        speechRecognizer = null
         scope.cancel()
         super.onDestroy()
     }
@@ -230,5 +290,6 @@ class SearchActivity : Activity() {
         private const val MOBILE_TYPING_PAUSE_MS = 400L
         private const val STATE_QUERY = "query_state"
         private const val VOICE_REQUEST = 1001
+        private const val AUDIO_PERMISSION_REQUEST = 1002
     }
 }

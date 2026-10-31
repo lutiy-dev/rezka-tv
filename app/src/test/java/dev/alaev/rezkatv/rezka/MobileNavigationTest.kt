@@ -24,6 +24,7 @@ class MobileNavigationTest {
         val actual = mobileMoreSections().any {
             it in listOf(Section.HOME, Section.FILMS, Section.SERIES, Section.SEARCH)
         }
-        assertThat("Primary tabs are not duplicated", actual, `is`(false))
+        val expected = false
+        assertThat("Primary tabs are not duplicated", actual, `is`(expected))
     }
 }

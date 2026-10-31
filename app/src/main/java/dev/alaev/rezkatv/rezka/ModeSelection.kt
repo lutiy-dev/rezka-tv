@@ -35,4 +35,6 @@ internal object ModeSelection {
     }
 
     fun isTv(context: Context): Boolean = effective(context) == TV
+
+    fun cardFocusable(mode: String): Boolean = mode == TV
 }

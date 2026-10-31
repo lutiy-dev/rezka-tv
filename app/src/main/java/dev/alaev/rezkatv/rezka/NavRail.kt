@@ -15,7 +15,7 @@ enum class Section(val label: Int, val icon: Int, val category: Category? = null
     CARTOONS(R.string.nav_cartoons, R.drawable.ic_cartoons, Category.CARTOONS),
     ANIME(R.string.nav_anime, R.drawable.ic_anime, Category.ANIME),
     FAVORITES(R.string.nav_favorites, R.drawable.ic_bookmark, Category.FAVORITES),
-    TOP(R.string.nav_top, R.drawable.ic_top),
+    TOP(R.string.nav_top, R.drawable.ic_top, Category.BEST),
     OSCAR(R.string.nav_oscar, R.drawable.ic_award),
     SETTINGS(R.string.nav_settings, R.drawable.ic_settings),
 }

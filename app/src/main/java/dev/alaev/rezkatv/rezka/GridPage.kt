@@ -62,7 +62,7 @@ class GridPage(
 
     fun show(category: Category) {
         page.visibility = View.VISIBLE
-        if (this.category == category) return
+        if (this.category == category && category != Category.BEST) return
         this.category = category
         sort = Sort.POPULAR
         title.text = category.title
@@ -118,6 +118,7 @@ class GridPage(
 
     private fun load() {
         val category = category ?: return
+        if (category == Category.BEST) return loadBest()
         val url = client.categoryUrl(category, sort)
         loadJob?.cancel()
         moreJob?.cancel()
@@ -133,6 +134,32 @@ class GridPage(
             when {
                 fresh != null -> showPage(fresh)
                 adapter.itemCount == 0 -> info.setText(R.string.load_failed)
+            }
+        }
+    }
+
+    private fun loadBest() {
+        loadJob?.cancel()
+        moreJob?.cancel()
+        moreJob = null
+        nextUrl = null
+        adapter.replace(emptyList())
+        info.setText(R.string.loading)
+        val year = BestFilms.currentYear()
+        title.text = activity.getString(R.string.best_year, year)
+        loadJob = scope.launch {
+            val result = loader.load {
+                BestFilms.load(year) { path ->
+                    val url = client.resolve(path)
+                    client.cachedPage(url)?.takeIf { it.age() < CACHE_TTL_MS }?.value ?: client.page(url)
+                }
+            }
+            if (result == null) {
+                info.setText(R.string.load_failed)
+            } else {
+                title.text = activity.getString(R.string.best_year, result.year)
+                showPage(result.page)
+                if (page.hasFocus()) focus()
             }
         }
     }

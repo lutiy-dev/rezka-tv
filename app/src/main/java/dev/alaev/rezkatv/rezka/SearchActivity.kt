@@ -13,6 +13,7 @@ import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
@@ -62,6 +63,13 @@ class SearchActivity : Activity() {
             keyboard = findViewById(R.id.keyboard)
             keyboard.setNumColumns(KEY_COLUMNS)
             keyboard.itemAnimator = null
+            keyboard.setOnKeyInterceptListener { event ->
+                val returnToMicrophone = event.action == KeyEvent.ACTION_DOWN &&
+                    event.keyCode == KeyEvent.KEYCODE_DPAD_UP &&
+                    keyboard.selectedPosition in 0 until KEY_COLUMNS
+                if (returnToMicrophone) findViewById<View>(R.id.voice_search).requestFocus()
+                returnToMicrophone
+            }
         }
 
         results = CardAdapter(onClick = { openDetails(it) }, searchMode = phoneMode)

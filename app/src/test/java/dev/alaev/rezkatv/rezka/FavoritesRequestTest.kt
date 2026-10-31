@@ -18,6 +18,7 @@ class FavoritesRequestTest {
         val actual = runCatching { FavoritesRequest.addPost("123", "../danger") }.isFailure
         assertThat("collection id validation rejects paths", actual, `is`(expected))
     }
+
     @Test
     fun usesYearlessBestFilmsRoute() {
         val actual = Category.BEST.path(Sort.POPULAR)
@@ -31,5 +32,4 @@ class FavoritesRequestTest {
         val expected = Category.BEST
         assertThat("Best section opens category grid", actual, `is`(expected))
     }
-
 }

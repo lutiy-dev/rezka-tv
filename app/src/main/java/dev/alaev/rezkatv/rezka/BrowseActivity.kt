@@ -18,7 +18,6 @@ import dev.alaev.rezkatv.R
 import dev.alaev.rezkatv.rezka.lists.ListsAssets
 import dev.alaev.rezkatv.rezka.lists.OscarPage
 import dev.alaev.rezkatv.rezka.lists.TitleMarks
-import dev.alaev.rezkatv.rezka.lists.TopPage
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 
@@ -31,7 +30,6 @@ class BrowseActivity : Activity() {
     private lateinit var rail: NavRail
     private lateinit var home: HomePage
     private lateinit var grid: GridPage
-    private lateinit var top: TopPage
     private lateinit var oscar: OscarPage
     private lateinit var choice: ChoicePanel
     private lateinit var root: BrowseFrameLayout
@@ -64,7 +62,6 @@ class BrowseActivity : Activity() {
         grid = GridPage(this, client, scope, loader)
         choice = ChoicePanel(findViewById(R.id.choice_panel))
         val marks = TitleMarks(this, client)
-        top = TopPage(this, client, scope, marks, choice)
         oscar = OscarPage(this, client, scope, marks)
         rail = NavRail(findViewById(R.id.rail), findViewById(R.id.rail_scrim), ::onSection) { ListsAssets.preload(this) }
 
@@ -151,7 +148,6 @@ class BrowseActivity : Activity() {
     override fun onRestart() {
         super.onRestart()
         if (home.isEmpty) home.load() else home.refresh(Shelf.CONTINUE)
-        if (top.isVisible) top.refresh()
         if (oscar.isVisible) oscar.refresh()
     }
 
@@ -187,7 +183,6 @@ class BrowseActivity : Activity() {
             choice.isShowing -> choice.hide()
             home.isVisible && home.onBack() -> Unit
             grid.isVisible && grid.onBack() -> Unit
-            top.isVisible && top.onBack() -> Unit
             oscar.isVisible && oscar.onBack() -> Unit
             rail.selected != Section.HOME -> onSection(Section.HOME)
             else -> finish()
@@ -200,7 +195,6 @@ class BrowseActivity : Activity() {
             rail.contains(currentFocus) -> if (rail.selected != Section.HOME) onSection(Section.HOME) else finish()
             home.isVisible && home.onBack() -> Unit
             grid.isVisible && grid.onBack() -> Unit
-            top.isVisible && top.onBack() -> Unit
             oscar.isVisible && oscar.onBack() -> Unit
             else -> rail.focus()
         }
@@ -217,11 +211,9 @@ class BrowseActivity : Activity() {
                 mobileNavigation?.update(section)
                 if (section != Section.HOME) home.hide()
                 if (section.category == null) grid.hide()
-                if (section != Section.TOP) top.hide()
                 if (section != Section.OSCAR) oscar.hide()
                 when (section) {
                     Section.HOME -> home.show()
-                    Section.TOP -> top.show()
                     Section.OSCAR -> oscar.show()
                     else -> grid.show(requireNotNull(section.category))
                 }
@@ -233,7 +225,6 @@ class BrowseActivity : Activity() {
     private fun focusPage() {
         when {
             grid.isVisible -> grid.focus()
-            top.isVisible -> top.focus()
             oscar.isVisible -> oscar.focus()
             else -> home.focus()
         }

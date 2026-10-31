@@ -40,6 +40,11 @@
     <string name="season_n">Сезон %1$d</string>
     <string name="now_playing">Сейчас</string>
 
+    <string name="favorites_add">В закладки</string>
+    <string name="favorites_choose_collection">Выберите коллекцию</string>
+    <string name="favorites_no_collections">Нет доступных коллекций в аккаунте</string>
+    <string name="favorites_added">Добавлено в коллекцию Rezka</string>
+    <string name="favorites_add_failed">Не удалось добавить в коллекцию</string>
     <string name="mark_watched">Отметить просмотренным</string>
     <string name="unmark_watched">Снять отметку «Просмотрено»</string>
 

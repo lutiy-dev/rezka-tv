@@ -8,7 +8,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import dev.alaev.rezkatv.rezka.login.LoginResult
-import org.json.JSONObject
 import org.jsoup.Jsoup
 import java.io.BufferedInputStream
 import java.io.File
@@ -104,7 +103,7 @@ class RezkaClient private constructor(context: Context, val baseUrl: String) {
     fun addToFavorites(postId: String, categoryId: String): Boolean {
         require(postId.all(Char::isDigit) && categoryId.all(Char::isDigit))
         val body = form(FavoritesRequest.addPost(postId, categoryId))
-        val response = JSONObject(post(resolve("/ajax/favorites/"), body, baseUrl))
+        val response = org.json.JSONObject(post(resolve("/ajax/favorites/"), body, baseUrl))
         return response.optBoolean("success") || response.optInt("success") == 1
     }
 

@@ -96,7 +96,7 @@ class RezkaClient private constructor(context: Context, val baseUrl: String) {
         val html = fetch(resolve("/favorites/"))
         val doc = Jsoup.parse(html, baseUrl)
         return doc.select("a.b-favorites_content__cats_list_link").mapNotNull { link ->
-            val id = Regex("""/favorites/(\\d+)/?""").find(link.attr("href"))?.groupValues?.get(1)
+            val id = Regex("""/favorites/(\d+)/?""").find(link.attr("href"))?.groupValues?.get(1)
             if (id == null) null else FavoriteCollection(id, link.text().trim())
         }.distinctBy { it.id }
     }

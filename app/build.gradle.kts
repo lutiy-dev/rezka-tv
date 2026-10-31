@@ -23,8 +23,8 @@ android {
         applicationId = "dev.alaev.rezkatv"
         minSdk = 28
         targetSdk = 35
-        versionCode = providers.environmentVariable("REZKA_VERSION_CODE").orNull?.toIntOrNull() ?: 3
-        versionName = providers.environmentVariable("REZKA_VERSION_NAME").orNull ?: "1.2.0"
+        versionCode = providers.environmentVariable("REZKA_VERSION_CODE").orNull?.toIntOrNull() ?: 22
+        versionName = providers.environmentVariable("REZKA_VERSION_NAME").orNull ?: "1.2.7"
     }
 
     signingConfigs {

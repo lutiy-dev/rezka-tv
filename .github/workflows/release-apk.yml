@@ -6,7 +6,7 @@ on:
       version_name:
         description: Version name, for example 1.1.1
         required: true
-        default: '1.1.1'
+        default: '1.2.7'
   push:
     branches:
       - 'release/**'
@@ -33,6 +33,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Setup JDK 17
         uses: actions/setup-java@v6
@@ -40,6 +42,13 @@ jobs:
           distribution: temurin
           java-version: '17'
           cache: gradle
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install quality tools
+        run: python -m pip install ruff==0.17.2 typos==1.51.1
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
@@ -82,7 +91,10 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Test and build signed Release APK
-        run: ./gradlew testDebugUnitTest assembleRelease
+        run: ./gradlew verify lintRelease assembleRelease
+        env:
+          PYTHON: python
+          GATE_BASE: origin/main
 
       - name: Verify APK exists
         run: test -f app/build/outputs/apk/release/app-release.apk
@@ -112,6 +124,26 @@ jobs:
             exit 1
           fi
           echo "Signing certificate matches latest release ($LATEST_TAG)."
+          AAPT="$ANDROID_HOME/build-tools/36.0.0/aapt"
+          "$AAPT" dump badging "$CURRENT_APK" > current-badging.txt
+          "$AAPT" dump badging "${PREVIOUS_APKS[0]}" > previous-badging.txt
+          NEW_ID="$(sed -n "s/^package: name='\([^']*\)'.*/\1/p" current-badging.txt)"
+          OLD_ID="$(sed -n "s/^package: name='\([^']*\)'.*/\1/p" previous-badging.txt)"
+          NEW_CODE="$(sed -n "s/^package:.*versionCode='\([^']*\)'.*/\1/p" current-badging.txt)"
+          OLD_CODE="$(sed -n "s/^package:.*versionCode='\([^']*\)'.*/\1/p" previous-badging.txt)"
+          NEW_NAME="$(sed -n "s/^package:.*versionName='\([^']*\)'.*/\1/p" current-badging.txt)"
+          test "$NEW_ID" = "dev.alaev.rezkatv"
+          test "$NEW_ID" = "$OLD_ID"
+          test "$NEW_CODE" -gt "$OLD_CODE"
+          test "$NEW_CODE" = "$REZKA_VERSION_CODE"
+          test "$NEW_NAME" = "$REZKA_VERSION_NAME"
+          python -c 'import sys; v=lambda s: tuple(map(int,s.removeprefix("v").split("."))); assert v(sys.argv[1])>v(sys.argv[2])' "$NEW_NAME" "$LATEST_TAG"
+          test "$GITHUB_SHA" = "$(git rev-parse origin/main)"
+          diff <(grep -E '^(sdkVersion|targetSdkVersion|native-code):' previous-badging.txt) <(grep -E '^(sdkVersion|targetSdkVersion|native-code):' current-badging.txt)
+          "$AAPT" list "$CURRENT_APK" > apk-entries.txt
+          if grep -Ei '(^|/)(keystore.properties|local.properties|\.env|[^/]+\.(jks|keystore|pem))$' apk-entries.txt; then exit 1; fi
+          echo "UPDATE_PASS applicationId=$NEW_ID versionCode=$OLD_CODE->$NEW_CODE versionName=$NEW_NAME certificate=$CURRENT_CERT"
+          sha256sum "$CURRENT_APK"
 
       - name: Publish GitHub Release
         env:
@@ -125,4 +157,8 @@ jobs:
           gh release create "$TAG" "$ASSET" update.json \
             --target "$GITHUB_SHA" \
             --title "Rezka TV ${REZKA_VERSION_NAME}" \
-            --generate-notes
+            --notes-file ".release/notes-${REZKA_VERSION_NAME}.md"
+          mkdir published
+          gh release download "$TAG" --pattern "$ASSET" --pattern update.json --dir published
+          cmp "$ASSET" "published/$ASSET"
+          cmp update.json published/update.json

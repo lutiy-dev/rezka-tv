@@ -26,7 +26,7 @@ class GridPage(
     private val info: TextView = activity.findViewById(R.id.grid_info)
     private val grid: VerticalGridView = activity.findViewById(R.id.grid)
     private val mobileGrid: RecyclerView = activity.findViewById(R.id.mobile_grid)
-    private val phoneMode = ResponsiveLayout.isPhone(activity.resources.configuration.smallestScreenWidthDp)
+    private val phoneMode = !ModeSelection.isTv(activity)
     private val adapter = CardAdapter(onFocus = ::showInfo, onClick = { activity.openDetails(it) }, catalogMode = true)
     private val columns = ResponsiveLayout.gridColumns(activity.resources.configuration.screenWidthDp)
     private val landscape = activity.resources.configuration.orientation ==

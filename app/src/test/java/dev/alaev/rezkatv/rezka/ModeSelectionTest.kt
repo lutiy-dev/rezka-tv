@@ -53,6 +53,7 @@ class ModeSelectionTest {
         val expected = ModeSelection.TOUCH
         assertThat("mode selection case 7", actual, `is`(expected))
     }
+
     @Test
     fun enablesCardFocusForTvMode() {
         val actual = ModeSelection.cardFocusable(ModeSelection.TV)
@@ -65,5 +66,21 @@ class ModeSelectionTest {
         val actual = ModeSelection.cardFocusable(ModeSelection.TOUCH)
         val expected = false
         assertThat("touch cards do not capture D-pad focus", actual, `is`(expected))
+    }
+
+    @Test
+    fun routesTvPostersToFocusableItems() {
+        val mode = ModeSelection.resolve(ModeSelection.TV, television = false, leanback = false)
+        val actual = ModeSelection.cardFocusable(mode)
+        val expected = true
+        assertThat("manual TV mode enables poster focus", actual, `is`(expected))
+    }
+
+    @Test
+    fun routesTouchPostersToNonFocusableItems() {
+        val mode = ModeSelection.resolve(ModeSelection.TOUCH, television = true, leanback = true)
+        val actual = ModeSelection.cardFocusable(mode)
+        val expected = false
+        assertThat("manual Touch mode preserves touch posters", actual, `is`(expected))
     }
 }

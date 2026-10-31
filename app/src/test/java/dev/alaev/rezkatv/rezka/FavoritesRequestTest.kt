@@ -19,14 +19,14 @@ class FavoritesRequestTest {
         assertThat("collection id validation rejects paths", actual, `is`(expected))
     }
     @Test
-    fun bestFilmsUseYearlessRoute() {
+    fun usesYearlessBestFilmsRoute() {
         val actual = Category.BEST.path(Sort.POPULAR)
         val expected = "/films/best/"
         assertThat("Best films route is yearless", actual, `is`(expected))
     }
 
     @Test
-    fun bestMenuUsesCategoryGrid() {
+    fun routesBestMenuThroughCategoryGrid() {
         val actual = Section.TOP.category
         val expected = Category.BEST
         assertThat("Best section opens category grid", actual, `is`(expected))

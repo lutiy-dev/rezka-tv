@@ -17,7 +17,7 @@
         android:allowBackup="false"
         android:banner="@drawable/banner"
         android:icon="@drawable/ic_launcher"
-        android:label="Rezka TV QA"
+        android:label="Rezka TV"
         android:theme="@style/Theme.RezkaTv">
 
         <activity

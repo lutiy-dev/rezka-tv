@@ -217,11 +217,11 @@ class BrowseActivity : Activity() {
                 mobileNavigation?.update(section)
                 if (section != Section.HOME) home.hide()
                 if (section.category == null) grid.hide()
-                top.hide()
+                if (section != Section.TOP) top.hide()
                 if (section != Section.OSCAR) oscar.hide()
                 when (section) {
                     Section.HOME -> home.show()
-                    Section.TOP -> grid.show(Category.BEST)
+                    Section.TOP -> top.show()
                     Section.OSCAR -> oscar.show()
                     else -> grid.show(requireNotNull(section.category))
                 }

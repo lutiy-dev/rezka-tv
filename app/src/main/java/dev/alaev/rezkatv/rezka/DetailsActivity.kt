@@ -2,16 +2,16 @@ package dev.alaev.rezkatv.rezka
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.widget.Toast
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
+import dev.alaev.rezkatv.R
+import dev.alaev.rezkatv.rezka.player.PlayerActivity
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import dev.alaev.rezkatv.R
-import dev.alaev.rezkatv.rezka.player.PlayerActivity
 
 class DetailsActivity : Activity() {
 

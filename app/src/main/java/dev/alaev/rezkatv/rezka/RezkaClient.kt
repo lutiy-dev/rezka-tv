@@ -5,19 +5,19 @@ import android.os.SystemClock
 import android.util.Log
 import android.util.LruCache
 import dev.alaev.rezkatv.rezka.login.LoginResult
-import java.io.BufferedInputStream
-import java.io.File
-import java.io.IOException
-import java.io.InputStream
-import java.net.HttpURLConnection
-import java.net.URL
-import java.net.URLEncoder
-import java.util.zip.GZIPInputStream
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.jsoup.Jsoup
+import java.io.BufferedInputStream
+import java.io.File
+import java.io.InputStream
+import java.io.IOException
+import java.net.HttpURLConnection
+import java.net.URL
+import java.net.URLEncoder
+import java.util.zip.GZIPInputStream
 
 class NotLoggedInException : IOException("rezka: not logged in")
 

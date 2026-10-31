@@ -55,13 +55,13 @@ jobs:
           chmod 600 keystore.properties "$RUNNER_TEMP/rezka-qa.jks"
 
       - name: Build QA APK
-        if: github.head_ref == 'test/1.2.0-qa-apk' || github.head_ref == 'test/1.2.0-playback-baseline' || github.head_ref == 'test/1.2.0-voice-search' || github.head_ref == 'test/1.2.1-google-tv-search' || github.head_ref == 'test/1.2.2-mobile-search-grid' || github.head_ref == 'fix/tv-focus-voice-qa-1.2.6'
+        if: github.head_ref == 'test/1.2.0-qa-apk' || github.head_ref == 'test/1.2.0-playback-baseline' || github.head_ref == 'test/1.2.0-voice-search' || github.head_ref == 'test/1.2.1-google-tv-search' || github.head_ref == 'test/1.2.2-mobile-search-grid' || github.head_ref == 'fix/tv-focus-voice-qa-1.2.6' || github.head_ref == 'feat/favorites-add-qa-1.2.6'
         run: ./gradlew assembleDebug
         env:
           REZKA_VERSION_NAME: "1.2.6"
           REZKA_VERSION_CODE: "6"
       - name: Upload QA APK
-        if: github.head_ref == 'test/1.2.0-qa-apk' || github.head_ref == 'test/1.2.0-playback-baseline' || github.head_ref == 'test/1.2.0-voice-search' || github.head_ref == 'test/1.2.1-google-tv-search' || github.head_ref == 'test/1.2.2-mobile-search-grid' || github.head_ref == 'fix/tv-focus-voice-qa-1.2.6'
+        if: github.head_ref == 'test/1.2.0-qa-apk' || github.head_ref == 'test/1.2.0-playback-baseline' || github.head_ref == 'test/1.2.0-voice-search' || github.head_ref == 'test/1.2.1-google-tv-search' || github.head_ref == 'test/1.2.2-mobile-search-grid' || github.head_ref == 'fix/tv-focus-voice-qa-1.2.6' || github.head_ref == 'feat/favorites-add-qa-1.2.6'
         uses: actions/upload-artifact@v7
         with:
           name: Rezka-TV-1.2.6-QA
